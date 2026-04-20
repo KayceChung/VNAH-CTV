@@ -15,7 +15,7 @@ const COLUMNS = {
   Title: "Title",
   Working_at: "Working_at",
   Ward: "Ward",
-  ID_number: "ID number",
+  ID_number: "ID",
   Status: "Status",
   LAST_CHANGE_BY: "LAST_CHANGE_BY",
   LAST_CHANGE_AT: "LAST_CHANGE_AT",
@@ -164,7 +164,7 @@ function registerEmployee(data) {
     }
   }
 
-  // Get column indices
+  // Get column indices - with debug logging
   const idNumberIndex = headers.indexOf(COLUMNS.ID_number);
   const nameIndex = headers.indexOf(COLUMNS.Name);
   const dobIndex = headers.indexOf(COLUMNS.DoB);
@@ -183,33 +183,40 @@ function registerEmployee(data) {
   const countIndex = headers.indexOf(COLUMNS.COUNT);
   const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
 
+  // Validate all required columns exist
+  if (idNumberIndex === -1 || idEmployeesIndex === -1 || passwordIndex === -1 || nameIndex === -1) {
+    return respond({
+      success: false,
+      message: "Missing required columns in sheet: ID_number=" + idNumberIndex + ", ID_Employees=" + idEmployeesIndex + ", Pass_word=" + passwordIndex + ", Name=" + nameIndex
+    });
+  }
+
   const now = new Date();
   var newRowData = new Array(headers.length);
   
+  // Initialize all cells with empty string
+  for (var j = 0; j < newRowData.length; j += 1) {
+    newRowData[j] = "";
+  }
+
+  // Set values
   newRowData[idNumberIndex] = id_number;
   newRowData[idEmployeesIndex] = id_employees;
   newRowData[passwordIndex] = password;
   newRowData[nameIndex] = name;
-  newRowData[dobIndex] = dob;
-  newRowData[sexIndex] = sex;
-  newRowData[addressIndex] = address;
-  newRowData[phoneIndex] = phone;
-  newRowData[zaloIndex] = zalo;
-  newRowData[emailIndex2] = email;
-  newRowData[workingAtIndex] = working_at;
-  newRowData[wardIndex] = ward;
-  newRowData[statusIndex] = "❌ DEACTIVATE";
-  newRowData[lastChangeByIndex] = "SYSTEM_REGISTER";
-  newRowData[lastChangeAtIndex] = now;
-  newRowData[countIndex] = 1;
-  newRowData[updateAtIndex] = now;
-
-  // Fill empty cells
-  for (var j = 0; j < newRowData.length; j += 1) {
-    if (newRowData[j] === undefined) {
-      newRowData[j] = "";
-    }
-  }
+  if (dobIndex !== -1) newRowData[dobIndex] = dob;
+  if (sexIndex !== -1) newRowData[sexIndex] = sex;
+  if (addressIndex !== -1) newRowData[addressIndex] = address;
+  if (phoneIndex !== -1) newRowData[phoneIndex] = phone;
+  if (zaloIndex !== -1) newRowData[zaloIndex] = zalo;
+  if (emailIndex2 !== -1) newRowData[emailIndex2] = email;
+  if (workingAtIndex !== -1) newRowData[workingAtIndex] = working_at;
+  if (wardIndex !== -1) newRowData[wardIndex] = ward;
+  if (statusIndex !== -1) newRowData[statusIndex] = "❌ DEACTIVATE";
+  if (lastChangeByIndex !== -1) newRowData[lastChangeByIndex] = "SYSTEM_REGISTER";
+  if (lastChangeAtIndex !== -1) newRowData[lastChangeAtIndex] = now;
+  if (countIndex !== -1) newRowData[countIndex] = 1;
+  if (updateAtIndex !== -1) newRowData[updateAtIndex] = now;
 
   sheet.appendRow(newRowData);
   SpreadsheetApp.flush();
