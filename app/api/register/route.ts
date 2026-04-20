@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
 const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL;
 
@@ -41,13 +41,10 @@ function normalizePhone(phone: string): string {
 }
 
 /**
- * Hash password using bcrypt with salt rounds = 10
- * Higher salt rounds = more secure but slower
+ * Generate UUID v4 for unique employee ID
  */
-async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  return hashedPassword;
+function generateUUID(): string {
+  return uuidv4();
 }
 
 /**
@@ -178,15 +175,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 7: Hash password with bcrypt (CRITICAL SECURITY STEP)
-    // Never store plain text passwords! bcrypt uses salt + strong algorithm
-    const hashedPassword = await hashPassword(password);
+    // Step 7: Generate UUID for ID_number (unique employee system identifier)
+    const idNumber = generateUUID();
 
-    // Step 8: Prepare GAS payload (with hashed password)
+    // Step 8: Prepare GAS payload (with PLAIN TEXT password - will be saved as-is in Sheet)
     const gasPayload = {
       action: 'registerEmployee',
+      id_number: idNumber, // UUID for column A
       id_employees: id_employees.trim(),
-      password: hashedPassword, // ← HASHED, NOT PLAIN TEXT
+      password: password, // ← PLAIN TEXT (saved directly to Sheet)
       name: name.trim(),
       dob: dob.trim(),
       sex: sex.trim(),
@@ -202,6 +199,9 @@ export async function POST(request: NextRequest) {
     // Step 9: Call Google Apps Script to register
     // GAS will:
     // - Check if ID_Employees already exists (prevent duplicates)
+    // - Check if Email already exists (prevent duplicates)
+    // - Save plain text password directly to Sheet
+    // - Store UUID in ID_number column (column A)
     // - Add Status = "❌ DEACTIVATE" automatically
     // - Add LAST_CHANGE_BY, LAST_CHANGE_AT, COUNT, UPDATE_AT
     const gasResult = await callGAS(gasPayload);

@@ -33,6 +33,7 @@ function doPost(e) {
     if (action === "updateEmployee") return updateEmployee(data);
     if (action === "registerEmployee") return registerEmployee(data);
     if (action === "getColumns") return getColumnsDebug();
+    if (action === "getLastRecords") return getLastRecords(data);
 
     return respond({ error: "Hành động không xác định", received: action });
   } catch (error) {
@@ -163,11 +164,12 @@ function updateEmployee(data) {
 /**
  * Register a new employee account
  * Validates: ID_Employees doesn't exist, creates new row with Status = "❌ DEACTIVATE"
- * Backend should have already hashed the password - we just store the hash
+ * Saves plain text password directly to Sheet with UUID in ID_number column
  */
 function registerEmployee(data) {
+  const id_number = String(data.id_number || "").trim(); // UUID from API
   const id_employees = String(data.id_employees || "").trim();
-  const password = String(data.password || ""); // Already hashed from API
+  const password = String(data.password || ""); // PLAIN TEXT from API (saved as-is)
   const name = String(data.name || "").trim();
   const dob = String(data.dob || "").trim();
   const sex = String(data.sex || "").trim();
@@ -215,6 +217,7 @@ function registerEmployee(data) {
   }
 
   // Get column indices from headers
+  const idNumberIndex = headers.indexOf(COLUMNS.ID_number);
   const nameIndex = headers.indexOf(COLUMNS.Name);
   const dobIndex = headers.indexOf(COLUMNS.DoB);
   const sexIndex = headers.indexOf(COLUMNS.Sex);
@@ -238,8 +241,9 @@ function registerEmployee(data) {
 
   // Build new row data with all columns
   var newRowData = new Array(headers.length);
+  newRowData[idNumberIndex] = id_number; // Store UUID in ID_number column
   newRowData[idEmployeesIndex] = id_employees;
-  newRowData[passwordIndex] = password; // Already hashed
+  newRowData[passwordIndex] = password; // PLAIN TEXT password (saved directly)
   newRowData[nameIndex] = name;
   newRowData[dobIndex] = dob;
   newRowData[sexIndex] = sex;
@@ -273,6 +277,7 @@ function registerEmployee(data) {
 
   // Build response with employee data
   const newEmployee = {
+    ID_number: id_number,
     ID_Employees: id_employees,
     Name: name,
     DoB: dob,
@@ -429,6 +434,34 @@ function callWebhook(payload) {
     Logger.log("Lỗi gọi webhook: " + error.toString());
     return false;
   }
+}
+
+function getLastRecords(data) {
+  const count = data.count || 2;
+  const sheet = getSheet();
+  const values = sheet.getDataRange().getValues();
+  
+  if (values.length < 2) {
+    return respond({ error: "Sheet trống" });
+  }
+  
+  const headers = values[0].map(function(header) {
+    return String(header).trim();
+  });
+  
+  const lastRecords = [];
+  const startIndex = Math.max(1, values.length - count);
+  
+  for (var i = startIndex; i < values.length; i += 1) {
+    const record = rowToRecord(headers, values[i]);
+    lastRecords.push(record);
+  }
+  
+  return respond({
+    success: true,
+    count: lastRecords.length,
+    records: lastRecords
+  });
 }
 
 function respond(data) {
