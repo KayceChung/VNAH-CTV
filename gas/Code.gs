@@ -1,4 +1,5 @@
 const SHEET_NAME = "Employees";
+const WEBHOOK_URL = "https://yi7a1c8g.rpcld.co/webhook/48886004-231e-4cf0-8640-9f4f40b85db3";
 
 const COLUMNS = {
   ID_Employees: "ID Employess",
@@ -101,6 +102,7 @@ function updateEmployee(data) {
   const headers = rowData.headers;
   const rowIndex = rowData.rowIndex;
   const now = new Date();
+  const oldZalo = valueOf(rowData.record, COLUMNS.Zalo);
 
   if (updates.name !== undefined) {
     setCellByHeader(sheet, headers, rowIndex, COLUMNS.Name, String(updates.name || "").trim());
@@ -118,7 +120,23 @@ function updateEmployee(data) {
     setCellByHeader(sheet, headers, rowIndex, COLUMNS.Address, String(updates.address || "").trim());
   }
   if (updates.zalo !== undefined) {
-    setCellByHeader(sheet, headers, rowIndex, COLUMNS.Zalo, String(updates.zalo || "").trim());
+    const newZalo = String(updates.zalo || "").trim();
+    setCellByHeader(sheet, headers, rowIndex, COLUMNS.Zalo, newZalo);
+    
+    // Gọi webhook nếu Zalo thay đổi
+    if (oldZalo !== newZalo) {
+      callWebhook({
+        action: "zalo_updated",
+        timestamp: now.toISOString(),
+        employee: {
+          name: valueOf(rowData.record, COLUMNS.Name),
+          phone: valueOf(rowData.record, COLUMNS.Phone),
+          username: valueOf(rowData.record, COLUMNS.ID_Employees),
+          oldZalo: oldZalo,
+          newZalo: newZalo
+        }
+      });
+    }
   }
   if (updates.dob !== undefined) {
     setCellByHeader(sheet, headers, rowIndex, COLUMNS.DoB, String(updates.dob || "").trim());
@@ -254,6 +272,29 @@ function normalizeText(value) {
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
+}
+
+function callWebhook(payload) {
+  try {
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true,
+      timeout: 10000
+    };
+    
+    const response = UrlFetchApp.fetch(WEBHOOK_URL, options);
+    const responseCode = response.getResponseCode();
+    
+    Logger.log("Webhook gọi thành công: " + responseCode);
+    Logger.log("Phản hồi: " + response.getContentText());
+    
+    return true;
+  } catch (error) {
+    Logger.log("Lỗi gọi webhook: " + error.toString());
+    return false;
+  }
 }
 
 function respond(data) {
