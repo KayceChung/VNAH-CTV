@@ -181,6 +181,14 @@ export default function HomePage() {
               >
                 🚀 Truy cập ứng dụng CTV
               </a>
+
+              <button
+                type="button"
+                onClick={() => router.push("/register")}
+                className="mt-3 flex w-full items-center justify-center rounded-2xl bg-green-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-green-700 hover:shadow-xl"
+              >
+                📋 Đăng Ký Tài Khoản Mới
+              </button>
             </section>
           </div>
         </div>

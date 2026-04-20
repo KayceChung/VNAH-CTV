@@ -31,6 +31,7 @@ function doPost(e) {
 
     if (action === "verifyIdentity") return verifyIdentity(data);
     if (action === "updateEmployee") return updateEmployee(data);
+    if (action === "registerEmployee") return registerEmployee(data);
     if (action === "getColumns") return getColumnsDebug();
 
     return respond({ error: "Hành động không xác định", received: action });
@@ -156,6 +157,139 @@ function updateEmployee(data) {
   return respond({
     success: true,
     employee: refreshedRow ? buildEmployee(refreshedRow.record) : buildEmployee(rowData.record),
+  });
+}
+
+/**
+ * Register a new employee account
+ * Validates: ID_Employees doesn't exist, creates new row with Status = "❌ DEACTIVATE"
+ * Backend should have already hashed the password - we just store the hash
+ */
+function registerEmployee(data) {
+  const id_employees = String(data.id_employees || "").trim();
+  const password = String(data.password || ""); // Already hashed from API
+  const name = String(data.name || "").trim();
+  const dob = String(data.dob || "").trim();
+  const sex = String(data.sex || "").trim();
+  const address = String(data.address || "").trim();
+  const phone = String(data.phone || "").trim();
+  const zalo = String(data.zalo || "").trim();
+  const email = String(data.email || "").trim().toLowerCase();
+  const working_at = String(data.working_at || "").trim();
+  const ward = String(data.ward || "").trim();
+
+  // Validate all required fields
+  if (!id_employees || !password || !name || !dob || !sex || !address || !phone || !email || !working_at || !ward) {
+    return respond({
+      success: false,
+      message: "Tất cả các trường dữ liệu là bắt buộc"
+    });
+  }
+
+  const sheet = getSheet();
+
+  // Check if ID_Employees already exists (prevent duplicates)
+  if (findEmployeeRowByUsername(sheet, id_employees)) {
+    return respond({
+      success: false,
+      message: "ID Nhân viên đã tồn tại. Vui lòng chọn ID khác."
+    });
+  }
+
+  // Check if Email already exists (prevent duplicates)
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0].map(function(header) {
+    return String(header).trim();
+  });
+  const emailIndex = headers.indexOf(COLUMNS.Email);
+
+  if (emailIndex !== -1) {
+    for (var i = 1; i < values.length; i += 1) {
+      if (String(values[i][emailIndex]).trim().toLowerCase() === email) {
+        return respond({
+          success: false,
+          message: "Email này đã được đăng ký. Vui lòng sử dụng email khác."
+        });
+      }
+    }
+  }
+
+  // Get column indices from headers
+  const nameIndex = headers.indexOf(COLUMNS.Name);
+  const dobIndex = headers.indexOf(COLUMNS.DoB);
+  const sexIndex = headers.indexOf(COLUMNS.Sex);
+  const addressIndex = headers.indexOf(COLUMNS.Address);
+  const phoneIndex = headers.indexOf(COLUMNS.Phone);
+  const zaloIndex = headers.indexOf(COLUMNS.Zalo);
+  const emailIndex2 = headers.indexOf(COLUMNS.Email);
+  const workingAtIndex = headers.indexOf(COLUMNS.Working_at);
+  const wardIndex = headers.indexOf(COLUMNS.Ward);
+  const idEmployeesIndex = headers.indexOf(COLUMNS.ID_Employees);
+  const passwordIndex = headers.indexOf(COLUMNS.Pass_word);
+  const statusIndex = headers.indexOf(COLUMNS.Status);
+  const lastChangeByIndex = headers.indexOf(COLUMNS.LAST_CHANGE_BY);
+  const lastChangeAtIndex = headers.indexOf(COLUMNS.LAST_CHANGE_AT);
+  const countIndex = headers.indexOf(COLUMNS.COUNT);
+  const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
+
+  // Insert new row at the end
+  const newRowIndex = values.length + 1;
+  const now = new Date();
+
+  // Build new row data with all columns
+  var newRowData = new Array(headers.length);
+  newRowData[idEmployeesIndex] = id_employees;
+  newRowData[passwordIndex] = password; // Already hashed
+  newRowData[nameIndex] = name;
+  newRowData[dobIndex] = dob;
+  newRowData[sexIndex] = sex;
+  newRowData[addressIndex] = address;
+  newRowData[phoneIndex] = phone;
+  newRowData[zaloIndex] = zalo;
+  newRowData[emailIndex2] = email;
+  newRowData[workingAtIndex] = working_at;
+  newRowData[wardIndex] = ward;
+  
+  // CRITICAL: Set Status to "❌ DEACTIVATE" for new registrations
+  // This prevents unauthorized activation
+  newRowData[statusIndex] = "❌ DEACTIVATE";
+  
+  // Add audit fields
+  newRowData[lastChangeByIndex] = "SYSTEM_REGISTER";
+  newRowData[lastChangeAtIndex] = now;
+  newRowData[countIndex] = 1;
+  newRowData[updateAtIndex] = now;
+
+  // Add empty values for other columns
+  for (var j = 0; j < newRowData.length; j += 1) {
+    if (newRowData[j] === undefined) {
+      newRowData[j] = "";
+    }
+  }
+
+  // Append row to sheet
+  sheet.appendRow(newRowData);
+  SpreadsheetApp.flush();
+
+  // Build response with employee data
+  const newEmployee = {
+    ID_Employees: id_employees,
+    Name: name,
+    DoB: dob,
+    Sex: sex,
+    Phone: phone,
+    Zalo: zalo,
+    Email: email,
+    Address: address,
+    Working_at: working_at,
+    Ward: ward,
+    Status: "❌ DEACTIVATE"
+  };
+
+  return respond({
+    success: true,
+    message: "Đăng ký tài khoản thành công! Chờ Admin phê duyệt để kích hoạt.",
+    employee: newEmployee
   });
 }
 
