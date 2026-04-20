@@ -129,13 +129,23 @@ export async function POST(request: NextRequest) {
       ward
     } = body as RegisterPayload;
 
-    // Step 2: Validate ID_Employees format (should be alphanumeric, 3-20 chars)
-    const idRegex = /^[a-zA-Z0-9_]{3,20}$/;
-    if (!idRegex.test(id_employees.trim())) {
+    // Step 2: Validate ID_Employees format (3-20 chars, no spaces, allows Vietnamese)
+    const id = id_employees.trim();
+    if (id.length < 3 || id.length > 20) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'ID_Employees phải chứa 3-20 ký tự (chữ, số, gạch dưới), không được có khoảng trắng hoặc ký tự đặc biệt' 
+          message: 'ID_Employees phải chứa 3-20 ký tự' 
+        },
+        { status: 400 }
+      );
+    }
+    // Check for spaces or special characters (allow letters, numbers, underscore, Vietnamese chars)
+    if (/\s|[^\w\u0080-\uFFFF]/.test(id)) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'ID_Employees không được chứa khoảng trắng hoặc ký tự đặc biệt' 
         },
         { status: 400 }
       );
