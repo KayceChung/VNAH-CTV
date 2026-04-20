@@ -1,5 +1,4 @@
 const SHEET_NAME = "Employees";
-const WEBHOOK_URL = "https://yi7a1c8g.rpcld.co/webhook/48886004-231e-4cf0-8640-9f4f40b85db3";
 
 const COLUMNS = {
   ID_Employees: "ID Employess",
@@ -32,39 +31,12 @@ function doPost(e) {
     if (action === "verifyIdentity") return verifyIdentity(data);
     if (action === "updateEmployee") return updateEmployee(data);
     if (action === "registerEmployee") return registerEmployee(data);
-    if (action === "getColumns") return getColumnsDebug();
-    if (action === "getLastRecords") return getLastRecords(data);
 
-    return respond({ error: "Hành động không xác định", received: action });
+    return respond({ error: "Unknown action" });
   } catch (error) {
     return respond({
       success: false,
-      message: error.message || "Lỗi máy chủ không xác định",
-    });
-  }
-}
-
-function getColumnsDebug() {
-  try {
-    const sheet = getSheet();
-    const values = sheet.getDataRange().getValues();
-    if (values.length < 1) {
-      return respond({ error: "Sheet trống" });
-    }
-    
-    const headers = values[0].map(function(header) {
-      return String(header).trim();
-    });
-    
-    return respond({ 
-      columns: headers,
-      totalColumns: headers.length,
-      totalRows: values.length 
-    });
-  } catch (error) {
-    return respond({
-      error: error.toString(),
-      message: "Không thể lấy danh sách cột"
+      message: error.message || "Unexpected server error",
     });
   }
 }
@@ -74,14 +46,14 @@ function verifyIdentity(data) {
   const phone = normalizePhone(data.phone);
 
   if (!fullName || !phone) {
-    return respond({ found: false, message: "Thiếu họ tên hoặc số điện thoại" });
+    return respond({ found: false, message: "Missing full_name or phone" });
   }
 
   const sheet = getSheet();
   const rowData = findEmployeeRowByIdentity(sheet, fullName, phone);
 
   if (!rowData) {
-    return respond({ found: false, message: "Không tìm thấy nhân viên phù hợp" });
+    return respond({ found: false });
   }
 
   return respond({
@@ -98,13 +70,12 @@ function updateEmployee(data) {
   const rowData = findEmployeeRowByIdentity(sheet, fullName, phone);
 
   if (!rowData) {
-    return respond({ success: false, message: "Không tìm thấy nhân viên" });
+    return respond({ success: false, message: "Employee not found" });
   }
 
   const headers = rowData.headers;
   const rowIndex = rowData.rowIndex;
   const now = new Date();
-  const oldZalo = valueOf(rowData.record, COLUMNS.Zalo);
 
   if (updates.name !== undefined) {
     setCellByHeader(sheet, headers, rowIndex, COLUMNS.Name, String(updates.name || "").trim());
@@ -122,29 +93,7 @@ function updateEmployee(data) {
     setCellByHeader(sheet, headers, rowIndex, COLUMNS.Address, String(updates.address || "").trim());
   }
   if (updates.zalo !== undefined) {
-    const newZalo = String(updates.zalo || "").trim();
-    setCellByHeader(sheet, headers, rowIndex, COLUMNS.Zalo, newZalo);
-    
-    // Gọi webhook nếu Zalo thay đổi
-    if (oldZalo !== newZalo) {
-      callWebhook({
-        action: "zalo_updated",
-        timestamp: now.toISOString(),
-        employee: {
-          name: valueOf(rowData.record, COLUMNS.Name),
-          phone: valueOf(rowData.record, COLUMNS.Phone),
-          username: valueOf(rowData.record, COLUMNS.ID_Employees),
-          oldZalo: oldZalo,
-          newZalo: newZalo
-        }
-      });
-    }
-  }
-  if (updates.dob !== undefined) {
-    setCellByHeader(sheet, headers, rowIndex, COLUMNS.DoB, String(updates.dob || "").trim());
-  }
-  if (updates.sex !== undefined) {
-    setCellByHeader(sheet, headers, rowIndex, COLUMNS.Sex, String(updates.sex || "").trim());
+    setCellByHeader(sheet, headers, rowIndex, COLUMNS.Zalo, String(updates.zalo || "").trim());
   }
   setCellByHeader(sheet, headers, rowIndex, COLUMNS.LAST_CHANGE_BY, String(updates.username || valueOf(rowData.record, COLUMNS.ID_Employees) || fullName));
   setCellByHeader(sheet, headers, rowIndex, COLUMNS.LAST_CHANGE_AT, now);
@@ -163,13 +112,12 @@ function updateEmployee(data) {
 
 /**
  * Register a new employee account
- * Validates: ID_Employees doesn't exist, creates new row with Status = "❌ DEACTIVATE"
- * Saves plain text password directly to Sheet with UUID in ID_number column
+ * Stores UUID in ID_number column, plain text password
  */
 function registerEmployee(data) {
-  const id_number = String(data.id_number || "").trim(); // UUID from API
+  const id_number = String(data.id_number || "").trim();
   const id_employees = String(data.id_employees || "").trim();
-  const password = String(data.password || ""); // PLAIN TEXT from API (saved as-is)
+  const password = String(data.password || "");
   const name = String(data.name || "").trim();
   const dob = String(data.dob || "").trim();
   const sex = String(data.sex || "").trim();
@@ -184,21 +132,21 @@ function registerEmployee(data) {
   if (!id_employees || !password || !name || !dob || !sex || !address || !phone || !email || !working_at || !ward) {
     return respond({
       success: false,
-      message: "Tất cả các trường dữ liệu là bắt buộc"
+      message: "All fields are required"
     });
   }
 
   const sheet = getSheet();
 
-  // Check if ID_Employees already exists (prevent duplicates)
+  // Check if ID_Employees already exists
   if (findEmployeeRowByUsername(sheet, id_employees)) {
     return respond({
       success: false,
-      message: "ID Nhân viên đã tồn tại. Vui lòng chọn ID khác."
+      message: "ID_Employees already exists"
     });
   }
 
-  // Check if Email already exists (prevent duplicates)
+  // Check if Email already exists
   const values = sheet.getDataRange().getValues();
   const headers = values[0].map(function(header) {
     return String(header).trim();
@@ -210,13 +158,13 @@ function registerEmployee(data) {
       if (String(values[i][emailIndex]).trim().toLowerCase() === email) {
         return respond({
           success: false,
-          message: "Email này đã được đăng ký. Vui lòng sử dụng email khác."
+          message: "Email already registered"
         });
       }
     }
   }
 
-  // Get column indices from headers
+  // Get column indices
   const idNumberIndex = headers.indexOf(COLUMNS.ID_number);
   const nameIndex = headers.indexOf(COLUMNS.Name);
   const dobIndex = headers.indexOf(COLUMNS.DoB);
@@ -235,15 +183,12 @@ function registerEmployee(data) {
   const countIndex = headers.indexOf(COLUMNS.COUNT);
   const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
 
-  // Insert new row at the end
-  const newRowIndex = values.length + 1;
   const now = new Date();
-
-  // Build new row data with all columns
   var newRowData = new Array(headers.length);
-  newRowData[idNumberIndex] = id_number; // Store UUID in ID_number column
+  
+  newRowData[idNumberIndex] = id_number;
   newRowData[idEmployeesIndex] = id_employees;
-  newRowData[passwordIndex] = password; // PLAIN TEXT password (saved directly)
+  newRowData[passwordIndex] = password;
   newRowData[nameIndex] = name;
   newRowData[dobIndex] = dob;
   newRowData[sexIndex] = sex;
@@ -253,48 +198,31 @@ function registerEmployee(data) {
   newRowData[emailIndex2] = email;
   newRowData[workingAtIndex] = working_at;
   newRowData[wardIndex] = ward;
-  
-  // CRITICAL: Set Status to "❌ DEACTIVATE" for new registrations
-  // This prevents unauthorized activation
   newRowData[statusIndex] = "❌ DEACTIVATE";
-  
-  // Add audit fields
   newRowData[lastChangeByIndex] = "SYSTEM_REGISTER";
   newRowData[lastChangeAtIndex] = now;
   newRowData[countIndex] = 1;
   newRowData[updateAtIndex] = now;
 
-  // Add empty values for other columns
+  // Fill empty cells
   for (var j = 0; j < newRowData.length; j += 1) {
     if (newRowData[j] === undefined) {
       newRowData[j] = "";
     }
   }
 
-  // Append row to sheet
   sheet.appendRow(newRowData);
   SpreadsheetApp.flush();
 
-  // Build response with employee data
-  const newEmployee = {
-    ID_number: id_number,
-    ID_Employees: id_employees,
-    Name: name,
-    DoB: dob,
-    Sex: sex,
-    Phone: phone,
-    Zalo: zalo,
-    Email: email,
-    Address: address,
-    Working_at: working_at,
-    Ward: ward,
-    Status: "❌ DEACTIVATE"
-  };
-
   return respond({
     success: true,
-    message: "Đăng ký tài khoản thành công! Chờ Admin phê duyệt để kích hoạt.",
-    employee: newEmployee
+    message: "Registration successful. Waiting for admin approval.",
+    employee: {
+      ID_number: id_number,
+      ID_Employees: id_employees,
+      Name: name,
+      Status: "❌ DEACTIVATE"
+    }
   });
 }
 
@@ -315,8 +243,7 @@ function findEmployeeRowByIdentity(sheet, fullName, phone) {
   const phoneIndex = headers.indexOf(COLUMNS.Phone);
 
   if (nameIndex === -1 || phoneIndex === -1) {
-    const availableColumns = headers.join(", ");
-    throw new Error("Không tìm thấy cột 'Name' hoặc 'Phone'. Các cột có sẵn: " + availableColumns);
+    throw new Error("Name or Phone column not found");
   }
 
   for (var index = 1; index < values.length; index += 1) {
@@ -344,7 +271,7 @@ function findEmployeeRowByUsername(sheet, username) {
   const usernameIndex = headers.indexOf(COLUMNS.ID_Employees);
 
   if (usernameIndex === -1) {
-    throw new Error("Không tìm thấy cột '" + COLUMNS.ID_Employees + "'");
+    throw new Error(COLUMNS.ID_Employees + " column not found");
   }
 
   for (var index = 1; index < values.length; index += 1) {
@@ -370,7 +297,7 @@ function rowToRecord(headers, row) {
 function setCellByHeader(sheet, headers, rowIndex, headerName, value) {
   const columnIndex = headers.indexOf(headerName);
   if (columnIndex === -1) {
-    throw new Error("Không tìm thấy cột '" + headerName + "'");
+    throw new Error(headerName + " column not found");
   }
 
   sheet.getRange(rowIndex, columnIndex + 1).setValue(value);
@@ -411,57 +338,6 @@ function normalizeText(value) {
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
-}
-
-function callWebhook(payload) {
-  try {
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true,
-      timeout: 10000
-    };
-    
-    const response = UrlFetchApp.fetch(WEBHOOK_URL, options);
-    const responseCode = response.getResponseCode();
-    
-    Logger.log("Webhook gọi thành công: " + responseCode);
-    Logger.log("Phản hồi: " + response.getContentText());
-    
-    return true;
-  } catch (error) {
-    Logger.log("Lỗi gọi webhook: " + error.toString());
-    return false;
-  }
-}
-
-function getLastRecords(data) {
-  const count = data.count || 2;
-  const sheet = getSheet();
-  const values = sheet.getDataRange().getValues();
-  
-  if (values.length < 2) {
-    return respond({ error: "Sheet trống" });
-  }
-  
-  const headers = values[0].map(function(header) {
-    return String(header).trim();
-  });
-  
-  const lastRecords = [];
-  const startIndex = Math.max(1, values.length - count);
-  
-  for (var i = startIndex; i < values.length; i += 1) {
-    const record = rowToRecord(headers, values[i]);
-    lastRecords.push(record);
-  }
-  
-  return respond({
-    success: true,
-    count: lastRecords.length,
-    records: lastRecords
-  });
 }
 
 function respond(data) {
