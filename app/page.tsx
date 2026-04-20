@@ -38,7 +38,7 @@ export default function HomePage() {
         <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr]">
           <section className="glass-card rounded-[32px] p-6 sm:p-8 page-fade">
             <div className="mb-6 flex items-center gap-3">
-              <img src="/logo.png" alt="VNAH Logo" className="h-10 shrink-0 object-contain" />
+              <img src="/logo.png?v=1" alt="VNAH Logo" width="40" height="40" className="h-10 w-10 shrink-0 object-contain" />
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#1E40AF]">VNAH QLDL CTV</p>
             </div>
             <h1 className="mt-3 max-w-lg text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
@@ -179,7 +179,7 @@ export default function HomePage() {
                 rel="noopener noreferrer"
                 className="mt-6 flex w-full items-center justify-center rounded-2xl bg-red-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-red-700 hover:shadow-xl"
               >
-                🚀 Truy cập ứng dụng CTV
+                🚀 Truy cập ứng dụng quản lý NKT
               </a>
 
               <button
