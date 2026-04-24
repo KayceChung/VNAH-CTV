@@ -87,6 +87,15 @@ export default function RegisterPage() {
     if (password.length < 6) {
       setPasswordStrength('weak');
     } else if (password.length <= 10) {
+    useEffect(() => {
+      if (form.province && form.district && form.ward) {
+        const provinceName = getNameByCode(provinces, form.province);
+        const districtName = getNameByCode(districts, form.district);
+        const wardName = getNameByCode(wards, form.ward);
+        const composedAddress = `${wardName}, ${districtName}, ${provinceName}`;
+        setForm((prev) => ({ ...prev, address_detail: composedAddress }));
+      }
+    }, [form.province, form.district, form.ward, provinces, districts, wards]);
       setPasswordStrength('medium');
     } else if (/[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
       setPasswordStrength('strong');
@@ -280,7 +289,9 @@ export default function RegisterPage() {
       nextErrors.phone = 'Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số';
     }
 
-    if (form.zalo && !/^0\d{9}$/.test(form.zalo.replace(/\s|-/g, ''))) {
+    if (!form.zalo.trim()) {
+      nextErrors.zalo = 'Số Zalo không được để trống';
+    } else if (!/^0\d{9}$/.test(form.zalo.replace(/\s|-/g, ''))) {
       nextErrors.zalo = 'Số Zalo phải bắt đầu bằng 0 và có đúng 10 chữ số';
     }
 
@@ -614,35 +625,22 @@ export default function RegisterPage() {
 
             {/* Row 5: Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-700">Thông tin liên hệ</p>
-                <button
-                  type="button"
-                  onClick={() => setShowOptionalContact((prev) => !prev)}
-                  className="text-xs font-medium text-blue-700 hover:text-blue-900"
-                >
-                  {showZaloField ? 'Ẩn số Zalo (tuỳ chọn)' : 'Thêm số Zalo (tuỳ chọn)'}
-                </button>
-              </div>
-
-              <div className={`grid grid-cols-1 ${showZaloField ? 'lg:grid-cols-2' : ''} gap-6`}>
-                {showZaloField ? (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Số Zalo (Tuỳ chọn)
-                    </label>
-                    <input
-                      type="tel"
-                      name="zalo"
-                      value={form.zalo}
-                      onChange={handleInputChange}
-                      placeholder="Ví dụ: 0912345678"
-                      className={fieldClass('zalo')}
-                      disabled={loading}
-                    />
-                    {errors.zalo ? <p className="text-xs text-red-600 mt-1">{errors.zalo}</p> : null}
-                  </div>
-                ) : null}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Số Zalo *
+                  </label>
+                  <input
+                    type="tel"
+                    name="zalo"
+                    value={form.zalo}
+                    onChange={handleInputChange}
+                    placeholder="Ví dụ: 0912345678"
+                    className={fieldClass('zalo')}
+                    disabled={loading}
+                  />
+                  {errors.zalo ? <p className="text-xs text-red-600 mt-1">{errors.zalo}</p> : null}
+                </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -662,7 +660,25 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Row 6: Agency Type */}
+            {/* Row 6: Address (moved before agency type) */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Địa chỉ thường trú *
+              </label>
+              <input
+                type="text"
+                name="address_detail"
+                value={form.address_detail}
+                onChange={handleInputChange}
+                placeholder="Tự động nối từ Tỉnh/Thành phố, Huyện/Quận, Xã/Phường"
+                className={fieldClass('address_detail')}
+                disabled={loading}
+              />
+              {errors.address_detail ? <p className="text-xs text-red-600 mt-1">{errors.address_detail}</p> : null}
+              <p className="text-xs text-gray-500 mt-1">Bạn có thể chỉnh sửa địa chỉ sau khi chọn Tỉnh/Thành phố, Huyện/Quận, Xã/Phường</p>
+            </div>
+
+            {/* Row 7: Agency Type */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Loại cơ quan *
@@ -686,7 +702,7 @@ export default function RegisterPage() {
               {errors.agency_type ? <p className="text-xs text-red-600 mt-1">{errors.agency_type}</p> : null}
             </div>
 
-            {/* Row 7: Province/District/Ward */}
+            {/* Row 8: Province/District/Ward */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -752,7 +768,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Row 8: Working_at & Address Detail */}
+              {/* Row 9: Working_at only */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -770,21 +786,7 @@ export default function RegisterPage() {
                 {errors.working_at ? <p className="text-xs text-red-600 mt-1">{errors.working_at}</p> : null}
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Địa chỉ chi tiết *
-                </label>
-                <input
-                  type="text"
-                  name="address_detail"
-                  value={form.address_detail}
-                  onChange={handleInputChange}
-                  placeholder="Ví dụ: Số 12, đường Lý Thường Kiệt"
-                  className={fieldClass('address_detail')}
-                  disabled={loading}
-                />
-                {errors.address_detail ? <p className="text-xs text-red-600 mt-1">{errors.address_detail}</p> : null}
-              </div>
+                <div></div>
             </div>
 
             {/* Submit Button */}
