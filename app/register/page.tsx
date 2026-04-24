@@ -492,6 +492,12 @@ export default function RegisterPage() {
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-5 space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
+                <h2 className="text-lg font-semibold text-slate-900">Thông tin cá nhân</h2>
+              </div>
+
             {/* Row 1: Username & Password */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
@@ -687,49 +693,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Row 6: Address (moved before agency type) */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Địa chỉ thường trú *
-              </label>
-              <input
-                type="text"
-                name="address_detail"
-                value={form.address_detail}
-                onChange={handleInputChange}
-                placeholder="Tự động nối từ Tỉnh/Thành phố, Huyện/Quận, Xã/Phường"
-                className={fieldClass('address_detail')}
-                disabled={loading}
-              />
-              {errors.address_detail ? <p className="text-xs text-red-600 mt-1">{errors.address_detail}</p> : null}
-              <p className="text-xs text-gray-500 mt-1">Bạn có thể chỉnh sửa địa chỉ sau khi chọn Tỉnh/Thành phố, Huyện/Quận, Xã/Phường</p>
-            </div>
-
-            {/* Row 7: Agency Type */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Loại cơ quan *
-              </label>
-              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 rounded-lg border p-3 ${errors.agency_type ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'}`}>
-                {AGENCY_TYPES.map((agencyType) => (
-                  <label key={agencyType} className="flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="radio"
-                      name="agency_type"
-                      value={agencyType}
-                      checked={form.agency_type === agencyType}
-                      onChange={handleInputChange}
-                      disabled={loading}
-                      className="h-4 w-4"
-                    />
-                    <span>{agencyType}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.agency_type ? <p className="text-xs text-red-600 mt-1">{errors.agency_type}</p> : null}
-            </div>
-
-            {/* Row 8: Province/District/Ward */}
+            {/* Row 6: Province/District/Ward */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -795,6 +759,55 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Row 7: Address */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Địa chỉ thường trú *
+              </label>
+              <input
+                type="text"
+                name="address_detail"
+                value={form.address_detail}
+                onChange={handleInputChange}
+                placeholder="Tự động nối từ Tỉnh/Thành phố, Huyện/Quận, Xã/Phường"
+                className={fieldClass('address_detail')}
+                disabled={loading}
+              />
+              {errors.address_detail ? <p className="text-xs text-red-600 mt-1">{errors.address_detail}</p> : null}
+              <p className="text-xs text-gray-500 mt-1">Bạn có thể chỉnh sửa địa chỉ sau khi chọn Tỉnh/Thành phố, Huyện/Quận, Xã/Phường</p>
+            </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-5 space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
+                <h2 className="text-lg font-semibold text-slate-900">Thông tin nơi công tác</h2>
+              </div>
+
+            {/* Row 8: Agency Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Loại cơ quan *
+              </label>
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 rounded-lg border p-3 ${errors.agency_type ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'}`}>
+                {AGENCY_TYPES.map((agencyType) => (
+                  <label key={agencyType} className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="agency_type"
+                      value={agencyType}
+                      checked={form.agency_type === agencyType}
+                      onChange={handleInputChange}
+                      disabled={loading}
+                      className="h-4 w-4"
+                    />
+                    <span>{agencyType}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.agency_type ? <p className="text-xs text-red-600 mt-1">{errors.agency_type}</p> : null}
+            </div>
+
               {/* Row 9: Working_at only */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
@@ -815,6 +828,7 @@ export default function RegisterPage() {
 
                 <div></div>
             </div>
+      </section>
 
             {/* Submit Button */}
             <button
