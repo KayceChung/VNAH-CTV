@@ -44,8 +44,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const { pushToast } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [showOptionalContact, setShowOptionalContact] = useState(false);
   const [showImportantNotes, setShowImportantNotes] = useState(false);
+  const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [provinces, setProvinces] = useState<ProvinceItem[]>([]);
   const [districts, setDistricts] = useState<ProvinceItem[]>([]);
@@ -87,15 +87,6 @@ export default function RegisterPage() {
     if (password.length < 6) {
       setPasswordStrength('weak');
     } else if (password.length <= 10) {
-    useEffect(() => {
-      if (form.province && form.district && form.ward) {
-        const provinceName = getNameByCode(provinces, form.province);
-        const districtName = getNameByCode(districts, form.district);
-        const wardName = getNameByCode(wards, form.ward);
-        const composedAddress = `${wardName}, ${districtName}, ${provinceName}`;
-        setForm((prev) => ({ ...prev, address_detail: composedAddress }));
-      }
-    }, [form.province, form.district, form.ward, provinces, districts, wards]);
       setPasswordStrength('medium');
     } else if (/[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
       setPasswordStrength('strong');
@@ -111,6 +102,10 @@ export default function RegisterPage() {
 
     if (name === 'password') {
       evaluatePasswordStrength(value);
+    }
+
+    if (name === 'address_detail') {
+      setAddressManuallyEdited(true);
     }
 
     setForm((prev) => ({
@@ -195,27 +190,36 @@ export default function RegisterPage() {
     key: 'province' | 'district' | 'ward',
     value: string
   ) {
+    setAddressManuallyEdited(false);
+
     setForm((prev) => {
       if (key === 'province') {
+        const composedAddress = composeAddressBySelection(value, '', '');
         return {
           ...prev,
           province: value,
           district: '',
           ward: '',
+          address_detail: composedAddress,
         };
       }
 
       if (key === 'district') {
+        const composedAddress = composeAddressBySelection(prev.province, value, '');
         return {
           ...prev,
           district: value,
           ward: '',
+          address_detail: composedAddress,
         };
       }
+
+      const composedAddress = composeAddressBySelection(prev.province, prev.district, value);
 
       return {
         ...prev,
         ward: value,
+        address_detail: composedAddress,
       };
     });
 
@@ -247,6 +251,31 @@ export default function RegisterPage() {
     const found = items.find((item) => String(item.code) === code);
     return found?.name || '';
   }
+
+  function composeAddressBySelection(provinceCode: string, districtCode: string, wardCode: string): string {
+    const provinceName = getNameByCode(provinces, provinceCode);
+    const districtName = getNameByCode(districts, districtCode);
+    const wardName = getNameByCode(wards, wardCode);
+    return [wardName, districtName, provinceName].filter(Boolean).join(', ');
+  }
+
+  useEffect(() => {
+    if (addressManuallyEdited) {
+      return;
+    }
+
+    const composedAddress = composeAddressBySelection(form.province, form.district, form.ward);
+    setForm((prev) => {
+      if (prev.address_detail === composedAddress) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        address_detail: composedAddress,
+      };
+    });
+  }, [form.province, form.district, form.ward, provinces, districts, wards, addressManuallyEdited]);
 
   const validateForm = (): FieldErrors => {
     const nextErrors: FieldErrors = {};
@@ -322,7 +351,7 @@ export default function RegisterPage() {
     }
 
     if (!form.address_detail.trim()) {
-      nextErrors.address_detail = 'Địa chỉ chi tiết không được để trống';
+      nextErrors.address_detail = 'Địa chỉ thường trú không được để trống';
     }
 
     return nextErrors;
@@ -451,8 +480,6 @@ export default function RegisterPage() {
   ];
 
   const showPasswordConfirm = Boolean(form.password || form.passwordConfirm || errors.passwordConfirm);
-  const showZaloField = Boolean(showOptionalContact || form.zalo || errors.zalo);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-2xl mx-auto">
