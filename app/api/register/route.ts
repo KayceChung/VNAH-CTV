@@ -9,12 +9,15 @@ interface RegisterPayload {
   name: string;
   dob: string;
   sex: string;
-  address: string;
+  agency_type: string;
+  province: string;
+  district: string;
+  ward: string;
+  address_detail: string;
   phone: string;
   zalo: string;
   email: string;
   working_at: string;
-  ward: string;
 }
 
 /**
@@ -57,11 +60,14 @@ function validateRequired(data: Partial<RegisterPayload>): { valid: boolean; err
     'name',
     'dob',
     'sex',
-    'address',
+    'agency_type',
+    'province',
+    'district',
+    'ward',
+    'address_detail',
     'phone',
     'email',
     'working_at',
-    'ward'
   ];
 
   for (const field of requiredFields) {
@@ -121,92 +127,102 @@ export async function POST(request: NextRequest) {
       name,
       dob,
       sex,
-      address,
+      agency_type,
+      province,
+      district,
+      ward,
+      address_detail,
       phone,
       zalo,
       email,
       working_at,
-      ward
     } = body as RegisterPayload;
 
-    // Step 2: Validate ID_Employees format (3-20 chars, no spaces, allows Vietnamese)
+    // Step 2: Validate username format (3-20 chars, letters/numbers/underscore only)
     const id = id_employees.trim();
-    if (id.length < 3 || id.length > 20) {
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(id)) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'ID_Employees phải chứa 3-20 ký tự' 
-        },
-        { status: 400 }
-      );
-    }
-    // Check for spaces or special characters (allow letters, numbers, underscore, Vietnamese chars)
-    if (/\s|[^\w\u0080-\uFFFF]/.test(id)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'ID_Employees không được chứa khoảng trắng hoặc ký tự đặc biệt' 
+        {
+          success: false,
+          message: 'Tên đăng nhập phải 3-20 ký tự, chỉ gồm chữ, số, dấu gạch dưới',
+          field: 'id_employees',
         },
         { status: 400 }
       );
     }
 
-    // Step 3: Validate password strength (min 6 chars)
-    if (password.length < 6) {
+    // Step 3: Validate password strength
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) {
       return NextResponse.json(
-        { success: false, message: 'Mật khẩu phải có tối thiểu 6 ký tự' },
+        {
+          success: false,
+          message: 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt',
+          field: 'password',
+        },
         { status: 400 }
       );
     }
 
-    // Step 4: Validate email format
+    // Step 4: Validate name does not contain special characters
+    if (!/^[\p{L}\s]+$/u.test(name.trim())) {
+      return NextResponse.json(
+        { success: false, message: 'Họ tên không được chứa ký tự đặc biệt', field: 'name' },
+        { status: 400 }
+      );
+    }
+
+    // Step 5: Validate email format
     if (!isValidEmail(email.trim())) {
       return NextResponse.json(
-        { success: false, message: 'Email không đúng định dạng' },
+        { success: false, message: 'Email không đúng định dạng', field: 'email' },
         { status: 400 }
       );
     }
 
-    // Step 5: Validate phone format
+    // Step 6: Validate phone format (10 digits and starts with 0)
     const normalizedPhone = normalizePhone(phone);
-    if (!isValidPhone(normalizedPhone)) {
+    if (!/^0\d{9}$/.test(normalizedPhone)) {
       return NextResponse.json(
-        { success: false, message: 'Số điện thoại không hợp lệ (phải là số VN: 09xxxxxxxx hoặc +84xxxxxxxxx)' },
+        { success: false, message: 'Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số', field: 'phone' },
         { status: 400 }
       );
     }
 
-    // Step 6: Validate Zalo (if provided, should be valid phone format)
+    // Step 7: Validate Zalo (if provided)
     const normalizedZalo = normalizePhone(zalo);
-    if (zalo && !isValidPhone(normalizedZalo)) {
+    if (zalo && !/^0\d{9}$/.test(normalizedZalo)) {
       return NextResponse.json(
-        { success: false, message: 'Số Zalo không hợp lệ (phải là số VN: 09xxxxxxxx hoặc +84xxxxxxxxx)' },
+        { success: false, message: 'Số Zalo phải bắt đầu bằng 0 và có đúng 10 chữ số', field: 'zalo' },
         { status: 400 }
       );
     }
 
-    // Step 7: Generate UUID for ID_number (unique employee system identifier)
+    const fullAddress = `${address_detail.trim()}, ${ward.trim()}, ${district.trim()}, ${province.trim()}`;
+
+    // Step 8: Generate UUID for ID_number (unique employee system identifier)
     const idNumber = generateUUID();
 
-    // Step 8: Prepare GAS payload (with PLAIN TEXT password - will be saved as-is in Sheet)
+    // Step 9: Prepare GAS payload
     const gasPayload = {
       action: 'registerEmployee',
       id_number: idNumber, // UUID for column A
       id_employees: id_employees.trim(),
-      password: password, // ← PLAIN TEXT (saved directly to Sheet)
+      password: password,
       name: name.trim(),
       dob: dob.trim(),
       sex: sex.trim(),
-      address: address.trim(),
+      agency_type: agency_type.trim(),
+      province: province.trim(),
+      district: district.trim(),
+      address: fullAddress,
       phone: normalizedPhone,
       zalo: normalizedZalo,
       email: email.trim().toLowerCase(),
       working_at: working_at.trim(),
       ward: ward.trim(),
-      // Status will be set by GAS to "❌ DEACTIVATE" - NOT set here to prevent tampering
     };
 
-    // Step 9: Call Google Apps Script to register
+    // Step 10: Call Google Apps Script to register
     // GAS will:
     // - Check if ID_Employees already exists (prevent duplicates)
     // - Check if Email already exists (prevent duplicates)
@@ -223,7 +239,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 10: Return success response
+    // Step 11: Return success response
     return NextResponse.json(
       {
         success: true,

@@ -10,12 +10,8 @@ export async function callGAS<T>(payload: object): Promise<T> {
     throw new Error("Chua cau hinh NEXT_PUBLIC_GAS_URL.");
   }
 
-  // Call through Next.js API route (server-side) to avoid CORS issues
-  const response = await fetch("/api/employee", {
+  const response = await fetch(GAS_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
     cache: "no-store",
   });

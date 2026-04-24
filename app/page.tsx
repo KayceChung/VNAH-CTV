@@ -1,196 +1,146 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { StepIndicator } from "@/components/StepIndicator";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { useAuth } from "@/context/AuthContext";
-import { callGAS } from "@/lib/api";
-import type { Employee } from "@/types/employee";
 
-type VerifyIdentityResponse = {
-  found: boolean;
-  message?: string;
-  employee?: Employee;
-};
+const APPSHEET_URL =
+  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
+
+const features = [
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        <path d="M15 11l1.5 1.5L19 10" />
+      </svg>
+    ),
+    accentColor: "text-[#1E40AF]",
+    accentBg: "bg-blue-100",
+    borderHover: "hover:border-blue-300",
+    badgeColor: "bg-blue-50 text-[#1E40AF]",
+    badge: "Tài khoản",
+    title: "Kiểm tra & thay đổi thông tin tài khoản",
+    description:
+      "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
+    btnLabel: "Truy cập",
+    btnClass:
+      "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
+    action: "verify",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <path d="M14 14h1.5M14 17.5h4M17.5 14v4" />
+      </svg>
+    ),
+    accentColor: "text-red-700",
+    accentBg: "bg-red-100",
+    borderHover: "hover:border-red-300",
+    badgeColor: "bg-red-50 text-red-700",
+    badge: "Ứng dụng",
+    title: "Truy cập ứng dụng",
+    description:
+      "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
+    btnLabel: "Truy cập",
+    btnClass:
+      "bg-red-600 text-white hover:bg-red-700",
+    action: "appsheet",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="12" y1="11" x2="12" y2="17" />
+        <line x1="9" y1="14" x2="15" y2="14" />
+      </svg>
+    ),
+    accentColor: "text-green-700",
+    accentBg: "bg-green-100",
+    borderHover: "hover:border-green-300",
+    badgeColor: "bg-green-50 text-green-700",
+    badge: "Đăng ký",
+    title: "Đăng ký tài khoản",
+    description: "Tạo tài khoản mới để tham gia hệ thống",
+    btnLabel: "Đăng ký",
+    btnClass:
+      "bg-green-600 text-white hover:bg-green-700",
+    action: "register",
+  },
+];
 
 export default function HomePage() {
   const router = useRouter();
-  const { session, setSession, pushToast, clearSession } = useAuth();
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [employeePreview, setEmployeePreview] = useState<Employee | null>(null);
-  const [loadingLookup, setLoadingLookup] = useState(false);
 
-  useEffect(() => {
-    clearSession();
-  }, [clearSession]);
-
-  useEffect(() => {
-    if (session) {
-      router.replace("/profile");
-    }
-  }, [router, session]);
+  function handleAction(action: string) {
+    if (action === "verify") router.push("/verify");
+    else if (action === "register") router.push("/register");
+    else if (action === "appsheet") window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
+  }
 
   return (
-    <main className="app-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-6">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr]">
-          <section className="glass-card rounded-[32px] p-6 sm:p-8 page-fade">
-            <div className="mb-6 flex items-center gap-3">
-              <img src="/logo.png?v=1" alt="VNAH Logo" width="40" height="40" className="h-10 w-10 shrink-0 object-contain" />
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#1E40AF]">VNAH QLDL CTV</p>
-            </div>
-            <h1 className="mt-3 max-w-lg text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
-              Xác thực danh tính để xem và điều chỉnh thông tin nhân sự.
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-              Người dùng nhập họ và tên cùng số điện thoại. Nếu khớp với dữ liệu trong CSDL, hệ thống sẽ mở form cho phép xem và cập nhật tên đăng nhập, mật khẩu và thông tin liên hệ.
+    <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
+        {/* Header */}
+        <div className="flex flex-col items-center gap-3 text-center page-fade">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.png?v=1"
+              alt="VNAH Logo"
+              width="48"
+              height="48"
+              className="h-12 w-12 shrink-0 object-contain"
+            />
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#1E40AF]">
+              VNAH QLDL CTV
             </p>
+          </div>
+          <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
+            Hệ thống quản lý cộng tác viên
+          </h1>
+          <p className="max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
+            Chọn chức năng bạn cần bên dưới để bắt đầu.
+          </p>
+        </div>
 
-            <div className="mt-8 space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-800">Họ và tên</span>
-                <input
-                  value={fullName}
-                  onChange={(event) => {
-                    setFullName(event.target.value);
-                    setEmployeePreview(null);
-                  }}
-                  placeholder="VD: Nguyễn Văn A"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#1E40AF] focus:ring-4 focus:ring-blue-100"
-                />
-              </label>
+        {/* Cards */}
+        <div className="grid gap-5 sm:grid-cols-3 page-fade">
+          {features.map((feat) => (
+            <div
+              key={feat.action}
+              className={`glass-card flex flex-col rounded-[28px] border border-slate-200/70 p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${feat.borderHover} cursor-default`}
+            >
+              {/* Icon */}
+              <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${feat.accentBg} ${feat.accentColor}`}>
+                {feat.icon}
+              </div>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-800">Số điện thoại</span>
-                <input
-                  value={phone}
-                  onChange={(event) => {
-                    setPhone(event.target.value);
-                    setEmployeePreview(null);
-                  }}
-                  placeholder="VD: 0901234567"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#1E40AF] focus:ring-4 focus:ring-blue-100"
-                />
-              </label>
+              {/* Badge */}
+              <span className={`mb-3 inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${feat.badgeColor}`}>
+                {feat.badge}
+              </span>
 
+              {/* Text */}
+              <h2 className="text-base font-bold leading-snug text-slate-900">
+                {feat.title}
+              </h2>
+              <p className="mt-2 flex-1 text-sm leading-6 text-slate-500">
+                {feat.description}
+              </p>
+
+              {/* Button */}
               <button
                 type="button"
-                disabled={loadingLookup}
-                onClick={async () => {
-                  if (!fullName.trim() || !phone.trim()) {
-                    pushToast("Vui lòng nhập đầy đủ họ tên và số điện thoại.", "error");
-                    return;
-                  }
-
-                  setLoadingLookup(true);
-
-                  try {
-                    const result = await callGAS<VerifyIdentityResponse>({
-                      action: "verifyIdentity",
-                      full_name: fullName.trim(),
-                      phone: phone.trim(),
-                    });
-
-                    if (!result.found) {
-                      setEmployeePreview(null);
-                      pushToast(result.message || "Không tìm thấy bản ghi khớp với họ tên và số điện thoại đã nhập.", "error");
-                      return;
-                    }
-
-                    setEmployeePreview(result.employee || null);
-                    pushToast("Xác thực thành công. Bạn có thể mở form điều chỉnh thông tin.", "success");
-                  } catch (error) {
-                    setEmployeePreview(null);
-                    pushToast(error instanceof Error ? error.message : "Không thể xác thực danh tính.", "error");
-                  } finally {
-                    setLoadingLookup(false);
-                  }
-                }}
-                className="flex w-full items-center justify-center rounded-2xl bg-[#1E40AF] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={() => handleAction(feat.action)}
+                className={`mt-6 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition hover:shadow-lg ${feat.btnClass}`}
               >
-                {loadingLookup ? <LoadingSpinner label="Đang xác thực danh tính..." /> : "Xác thực thông tin"}
+                {feat.btnLabel}
               </button>
             </div>
-
-            {employeePreview ? (
-              <div className="mt-6 rounded-[28px] border border-blue-200 bg-blue-50/70 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#1E40AF]">Đã tìm thấy bản ghi</p>
-                <p className="mt-2 text-base font-semibold leading-7 text-slate-900">{employeePreview.Name || fullName.trim()}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Bản ghi này khớp với họ tên và số điện thoại đã nhập. Chuyển sang bước tiếp theo để xem và điều chỉnh thông tin nhân sự.
-                </p>
-
-                <div className="mt-4 grid gap-3 rounded-2xl border border-white/60 bg-white/70 p-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tên đăng nhập hiện tại</p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">{employeePreview.ID_Employees || "Chưa cập nhật"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Email</p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">{employeePreview.Email || "Chưa cập nhật"}</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSession({
-                      identity: {
-                        name: fullName.trim(),
-                        phone: phone.trim(),
-                      },
-                      employee: employeePreview,
-                    });
-                    router.push("/profile");
-                  }}
-                  className="mt-4 flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Xem và điều chỉnh thông tin
-                </button>
-              </div>
-            ) : null}
-          </section>
-
-          <div className="space-y-6">
-            <StepIndicator currentStep={1} />
-
-            <section className="glass-card rounded-[32px] p-6 page-fade">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Quy trình</p>
-              <div className="mt-4 space-y-4">
-                {[
-                  "Nhập họ và tên cùng số điện thoại để xác thực danh tính.",
-                  "Xem và điều chỉnh tên đăng nhập, mật khẩu và thông tin liên hệ.",
-                  "Lưu và thay đổi dữ liệu.",
-                ].map((item, index) => (
-                  <div key={item} className="flex gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-[#1E40AF]">
-                      {index + 1}
-                    </div>
-                    <p className="text-sm leading-6 text-slate-700">{item}</p>
-                  </div>
-                ))}
-              </div>
-
-              <a
-                href="https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 flex w-full items-center justify-center rounded-2xl bg-red-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-red-700 hover:shadow-xl"
-              >
-                🚀 Truy cập ứng dụng quản lý NKT
-              </a>
-
-              <button
-                type="button"
-                onClick={() => router.push("/register")}
-                className="mt-3 flex w-full items-center justify-center rounded-2xl bg-green-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-green-700 hover:shadow-xl"
-              >
-                📋 Đăng Ký Tài Khoản Mới
-              </button>
-            </section>
-          </div>
+          ))}
         </div>
       </div>
     </main>

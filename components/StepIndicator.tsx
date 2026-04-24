@@ -1,7 +1,7 @@
 const steps = [
-  { id: 1, title: "Xác thực" },
-  { id: 2, title: "Điều chỉnh" },
-  { id: 3, title: "Hoàn tất" },
+  { id: 1, title: "Xac thuc" },
+  { id: 2, title: "Dieu chinh" },
+  { id: 3, title: "Hoan tat" },
 ];
 
 export function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -22,7 +22,7 @@ export function StepIndicator({ currentStep }: { currentStep: number }) {
                   {step.id}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[11px] uppercase tracking-[0.2em] text-slate-500">Bước</p>
+                  <p className="truncate text-[11px] uppercase tracking-[0.2em] text-slate-500">Buoc</p>
                   <p className="truncate text-sm font-semibold text-slate-900">{step.title}</p>
                 </div>
               </div>

@@ -39,15 +39,13 @@ export default function ProfilePage() {
     email: session?.employee.Email || "",
     address: session?.employee.Address || "",
     zalo: session?.employee.Zalo || "",
-    dob: session?.employee.DoB || "",
-    sex: session?.employee.Sex || "",
   }));
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!session) {
       pushToast("Phiên xác thực không tồn tại. Vui lòng đăng nhập lại.", "error");
-      router.replace("/");
+      router.replace("/verify");
     }
   }, [pushToast, router, session]);
 
@@ -62,15 +60,12 @@ export default function ProfilePage() {
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-6">
         <StepIndicator currentStep={2} />
 
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="glass-card rounded-[28px] p-6 page-fade">
             <div className="mb-5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="VNAH Logo" className="h-10 shrink-0 object-contain" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Hồ sơ nhân sự</p>
-                  <h2 className="text-xl font-bold text-slate-950">{employee.Name || "Thông tin nhân viên"}</h2>
-                </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Hồ sơ nhân sự</p>
+                <h2 className="text-xl font-bold text-slate-950">{employee.Name || "Thông tin nhân viên"}</h2>
               </div>
               <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-[#1E40AF]">Có thể chỉnh sửa</div>
             </div>
@@ -104,8 +99,6 @@ export default function ProfilePage() {
                       email: form.email.trim(),
                       address: form.address.trim(),
                       zalo: form.zalo.trim(),
-                      dob: form.dob.trim(),
-                      sex: form.sex.trim(),
                     },
                   });
 
@@ -137,8 +130,6 @@ export default function ProfilePage() {
                 { key: "password", label: "Mật khẩu", value: form.password, type: "password" },
                 { key: "email", label: "Email", value: form.email, type: "email" },
                 { key: "zalo", label: "Zalo", value: form.zalo },
-                { key: "dob", label: "Ngày sinh", value: form.dob, type: "date" },
-                { key: "sex", label: "Giới tính", value: form.sex },
                 { key: "address", label: "Địa chỉ", value: form.address },
               ].map((field) => (
                 <label key={field.key} className={`block ${field.key === "address" ? "sm:col-span-2" : ""}`}>
@@ -160,6 +151,12 @@ export default function ProfilePage() {
               <div className="sm:col-span-2 grid gap-4 rounded-2xl border border-slate-200 bg-white/70 p-4 sm:grid-cols-2">
                 {[
                   { label: "Số điện thoại đối chiếu", value: employee.Phone },
+                  { label: "Ngày sinh", value: employee.DoB },
+                  { label: "Giới tính", value: employee.Sex },
+                  { label: "Chi nhánh", value: employee.Branch },
+                  { label: "Phòng ban", value: employee.Department },
+                  { label: "Chức danh", value: employee.Title },
+                  { label: "Nơi làm việc", value: employee.Working_at },
                   { label: "Trạng thái", value: employee.Status },
                 ].map((item) => (
                   <div key={item.label}>
@@ -183,7 +180,7 @@ export default function ProfilePage() {
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Tiếp theo</p>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">Đang sửa trực tiếp trên Google Sheets</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Sau khi đối chiếu họ tên và số điện thoại thành công, bạn có thể cập nhật tên đăng nhập, mật khẩu và một số thông tin liên hệ. Nút lưu sẽ ghi trực tiếp vào Google Sheets thông qua Apps Script.
+              Sau khi đối chiếu họ tên và số điện thoại thành công, bạn có thể cập nhật tên đăng nhập, mật khẩu và một số thông tin liên hệ. Nút lưu sẽ ghi trực tiếp về Google Sheets thông qua Apps Script.
             </p>
 
             <div className="mt-6 rounded-3xl border border-blue-200 bg-blue-50/80 p-5">
@@ -199,15 +196,6 @@ export default function ProfilePage() {
             >
               Đến bước hoàn tất
             </button>
-
-            <a
-              href="https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 flex w-full items-center justify-center rounded-2xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-700 hover:shadow-xl"
-            >
-              🚀 Truy cập ứng dụng CTV
-            </a>
           </section>
         </div>
       </div>
