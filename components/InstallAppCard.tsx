@@ -39,7 +39,7 @@ function getAutoHint(device: DeviceType, hasPrompt: boolean): string {
   }
 
   if (device === "iphone") {
-    return "iPhone: Nhan nut Share (o thanh duoi), chon 'Add to Home Screen', sau do bam Add.";
+    return "iPhone: Tao shortcut tren Home Screen. Mo app nay tren trai muc duoi, chon 'Add to Home Screen', sau do bam Add.";
   }
 
   return "May tinh: Nhan bieu tuong sao (bookmark) hoac menu trinh duyet de tao shortcut ra man hinh.";
@@ -126,7 +126,9 @@ export function InstallAppCard() {
 
     try {
       if (device === "iphone") {
-        setMessage("Huong dan iPhone: Mo Share -> Add to Home Screen -> Add.");
+        // Redirect to AppSheet app on App Store
+        window.location.href = "https://apps.apple.com/app/appsheet/id1097914718";
+        setMessage("Dang mo App Store... Sau khi cai dat AppSheet, hay them shortcut tren Home Screen.");
         return;
       }
 
