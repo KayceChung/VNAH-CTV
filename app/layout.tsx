@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { ServiceWorkerRegistry } from "@/components/ServiceWorkerRegistry";
 
 export const metadata: Metadata = {
   title: "VNAH QLNKT PUBLIC",
   description: "Xac thuc danh tinh va doi mat khau nhan su tren Google Sheets.",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -28,7 +26,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
-        <ServiceWorkerRegistry />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

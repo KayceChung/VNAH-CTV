@@ -1,18 +1,7 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-declare global {
-  interface WindowEventMap {
-    beforeinstallprompt: BeforeInstallPromptEvent;
-  }
-}
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 const APPSHEET_URL = "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
 
@@ -81,21 +70,6 @@ const features = [
 export default function HomePage() {
   const router = useRouter();
   const [installing, setInstalling] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      console.log("Install prompt is ready!");
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
-  }, []);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
@@ -103,21 +77,9 @@ export default function HomePage() {
     else if (action === "appsheet") handleInstallApp();
   }
 
-  const handleInstallApp = async () => {
+  const handleInstallApp = () => {
     setInstalling(true);
-
-    if (deferredPrompt) {
-      try {
-        // Tự động hiển thị PWA install prompt
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`Install outcome: ${outcome}`);
-      } catch (error) {
-        console.error("Install error:", error);
-      }
-    }
-
-    // Mở AppSheet URL
+    // Mở AppSheet URL - AppSheet sẽ hiển thị install prompt của chính nó
     window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
     setTimeout(() => setInstalling(false), 800);
   };
