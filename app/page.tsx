@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 const APPSHEET_URL =
   "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
 
-const SHORTCUT_URL =
-  "https://www.appsheet.com/deploy/iosinappshortcut?appGuidString=44edd09d-1417-4503-a9aa-26111dd58fce&manifestToken=e0a2926f-8abf-4d5a-9349-8c9129388aa5";
+// AppSheet-provided URL: installs AppSheet app then adds icon to home screen
+const MOBILE_INSTALL_URL =
+  "https://www.appsheet.com/newshortcut/44edd09d-1417-4503-a9aa-26111dd58fce";
 
 const LOCAL_INSTALL_PROTOCOL = "vnahshortcut://install";
 
@@ -137,52 +138,34 @@ export default function HomePage() {
         protocolLink.click();
         protocolLink.remove();
 
+        // Fallback: if protocol not registered, open browser install URL
         window.setTimeout(() => {
-          window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+          window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         }, 1200);
 
         return;
       }
 
-      // Android can show install prompt (if browser/app meets PWA requirements).
-      if (isAndroid && deferredPrompt) {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        setDeferredPrompt(null);
-
-        if (choice.outcome === "accepted") {
-          setInstallHint("Da bat install prompt tren Android. Sau khi ban xac nhan, icon se hien tren man hinh chinh.");
-        } else {
-          setInstallHint("Ban da dong install prompt. Co the bam lai de thu tiep.");
-        }
-
+      // Android: AppSheet newshortcut URL installs the AppSheet app (via Play Store
+      // if needed) then automatically adds the app icon to the home screen.
+      if (isAndroid) {
+        setInstallHint("Dang chuyen den Play Store / AppSheet de cai dat va them icon...");
+        window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         return;
       }
 
-      // iOS does not allow fully automatic home-screen install from web.
+      // iOS: AppSheet newshortcut URL redirects to App Store if AppSheet not
+      // installed, then guides user to add the icon. Show a brief popup.
       if (isIOS) {
-        setInstallHint("Da mo AppSheet. Vui long lam theo huong dan tren popup de them icon ra man hinh chinh.");
+        setInstallHint("Da mo AppSheet. Lam theo huong dan popup de hoan tat.");
         setShowIosGuide(true);
-        window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+        window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         return;
       }
 
-      if (deferredPrompt) {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        setDeferredPrompt(null);
-
-        if (choice.outcome === "accepted") {
-          setInstallHint("Da mo install prompt va ban da chap nhan cai dat.");
-        } else {
-          setInstallHint("Ban da dong install prompt. Co the bam lai de thu tiep.");
-        }
-
-        return;
-      }
-
-      setInstallHint("Trinh duyet hien tai khong cho phep cai dat tu dong 100%. Dang mo URL de ban cai thu cong.");
-      window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+      // Other mobile/desktop without Windows protocol: open install URL directly.
+      setInstallHint("Dang mo lien ket cai dat AppSheet...");
+      window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
     } finally {
       setInstalling(false);
     }
@@ -263,15 +246,14 @@ export default function HomePage() {
       {showIosGuide ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4" role="dialog" aria-modal="true" aria-label="Huong dan cai dat tren iPhone">
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-900">Cai dat icon tren iPhone/iPad</h2>
+            <h2 className="text-lg font-bold text-slate-900">Cai dat icon tren iPhone / iPad</h2>
             <p className="mt-2 text-sm text-slate-600">
-              iOS khong cho phep cai tu dong 100%. Lam nhanh theo 4 buoc sau:
+              AppSheet da duoc mo. Lam theo 3 buoc de them icon ra man hinh chinh:
             </p>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
-              <li>Mo trang AppSheet vua duoc chuyen den.</li>
-              <li>Bam nut Share (hinh vuong co mui ten huong len).</li>
-              <li>Chon "Add to Home Screen".</li>
-              <li>Bam "Add" de hien icon ngoai man hinh.</li>
+              <li>Trong app AppSheet vua mo, bam nut <strong>Share</strong> (hinh vuong co mui ten &uarr;).</li>
+              <li>Chon <strong>&ldquo;Add to Home Screen&rdquo;</strong>.</li>
+              <li>Bam <strong>&ldquo;Add&rdquo;</strong> — icon se hien ngay tren man hinh chinh.</li>
             </ol>
             <div className="mt-5 flex justify-end">
               <button
