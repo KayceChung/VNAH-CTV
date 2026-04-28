@@ -4,21 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const APPSHEET_URL =
-  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
+  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
 
-// AppSheet-provided URL: installs AppSheet app then adds icon to home screen
+// AppSheet desktop installation URL
+const APPSHEET_INSTALL_URL =
+  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
+
+// AppSheet-provided URL: installs AppSheet app then adds icon to home screen (mobile)
 const MOBILE_INSTALL_URL =
   "https://www.appsheet.com/newshortcut/44edd09d-1417-4503-a9aa-26111dd58fce";
 
 const LOCAL_INSTALL_PROTOCOL = "vnahshortcut://install";
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-};
 
 const features = [
   {
@@ -89,22 +85,14 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installing, setInstalling] = useState(false);
   const [installHint, setInstallHint] = useState("");
   const [showIosGuide, setShowIosGuide] = useState(false);
 
   useEffect(() => {
-    const onBeforeInstallPrompt = (event: Event) => {
-      const promptEvent = event as BeforeInstallPromptEvent;
-      promptEvent.preventDefault();
-      setDeferredPrompt(promptEvent);
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-
+    // Cleanup on component unmount
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      setInstallHint("");
     };
   }, []);
 
@@ -122,58 +110,27 @@ export default function HomePage() {
     setInstalling(true);
 
     try {
-      // First, try to use PWA install prompt (desktop Chrome, Edge, etc.)
-      if (deferredPrompt) {
-        setInstallHint("Hien thi giao dien cai dat ung dung...");
-        
-        // Show the install prompt
-        deferredPrompt.prompt();
-        
-        // Wait for user to make a choice
-        const choice = await deferredPrompt.userChoice;
-        
-        if (choice.outcome === "accepted") {
-          setInstallHint("Cam on! Ung dung da duoc cai dat. Ban co the tim thay icon tren desktop hoac Start Menu.");
-        } else {
-          setInstallHint("Ban da tu choi cai dat.");
-        }
-        
-        // Clear the deferred prompt
-        setDeferredPrompt(null);
-        return;
-      }
-
-      // If PWA install not available, fall back to platform-specific installation
       const ua = navigator.userAgent.toLowerCase();
       const isWindowsDesktop = /windows nt/.test(ua) && !/android|iphone|ipad|ipod/.test(ua);
       const isAndroid = /android/.test(ua);
       const isIOS = /iphone|ipad|ipod/.test(ua);
 
+      // Windows: Open AppSheet installer
       if (isWindowsDesktop) {
-        // Try Windows protocol handler for native app
-        setInstallHint("Dang goi trinh cai dat... Neu chua cai, hay chay setup_vnah_oneclick_protocol.bat mot lan.");
-
-        const protocolLink = document.createElement("a");
-        protocolLink.href = LOCAL_INSTALL_PROTOCOL;
-        protocolLink.style.display = "none";
-        document.body.appendChild(protocolLink);
-        protocolLink.click();
-        protocolLink.remove();
-
-        // Fallback: if protocol not registered, open AppSheet install URL
-        window.setTimeout(() => {
-          window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
-        }, 1200);
-
+        setInstallHint("Dang mo AppSheet de cai dat ung dung... Vui long cho may tinh xu ly.");
+        window.open(APPSHEET_INSTALL_URL, "_blank", "noopener,noreferrer");
         return;
       }
 
+      // Android: AppSheet newshortcut URL installs the AppSheet app (via Play Store)
+      // then automatically adds the app icon to the home screen.
       if (isAndroid) {
-        setInstallHint("Dang mo Play Store / AppSheet de cai dat va them icon...");
+        setInstallHint("Dang chuyen den Play Store / AppSheet de cai dat va them icon...");
         window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         return;
       }
 
+      // iOS: AppSheet newshortcut URL redirects to App Store if AppSheet not installed
       if (isIOS) {
         setInstallHint("Da mo AppSheet. Lam theo huong dan popup de hoan tat.");
         setShowIosGuide(true);
@@ -181,9 +138,9 @@ export default function HomePage() {
         return;
       }
 
-      // Other platforms: open AppSheet install URL directly
+      // Other platforms: open AppSheet install URL
       setInstallHint("Dang mo lien ket cai dat AppSheet...");
-      window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
+      window.open(APPSHEET_INSTALL_URL, "_blank", "noopener,noreferrer");
     } finally {
       setInstalling(false);
     }
