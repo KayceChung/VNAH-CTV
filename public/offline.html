@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#00a3ff" />
+  <title>VNAH QLNKT PUBLIC - Chế độ ngoại tuyến</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+        "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .offline-container {
+      background: white;
+      border-radius: 28px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .offline-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #1e40af;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .retry-btn {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 0.875rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+
+    .offline-tips {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #eee;
+      font-size: 0.875rem;
+      color: #999;
+    }
+
+    .offline-tips h3 {
+      color: #666;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .offline-tips ul {
+      list-style: none;
+      text-align: left;
+    }
+
+    .offline-tips li {
+      padding: 0.25rem 0;
+    }
+
+    .offline-tips li:before {
+      content: "✓ ";
+      color: #667eea;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📶</div>
+    <h1>Không có kết nối mạng</h1>
+    <p>Ứng dụng VNAH QLNKT đang hoạt động ở chế độ ngoại tuyến. Vui lòng kiểm tra kết nối internet của bạn.</p>
+    <button class="retry-btn" onclick="location.reload()">Thử lại</button>
+
+    <div class="offline-tips">
+      <h3>💡 Bạn có thể làm gì:</h3>
+      <ul>
+        <li>Kiểm tra kết nối Wi-Fi hoặc dữ liệu di động</li>
+        <li>Tắt chế độ máy bay nếu được bật</li>
+        <li>Thử lại trang này</li>
+        <li>Các thông tin đã xem trước sẽ vẫn có sẵn</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

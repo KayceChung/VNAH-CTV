@@ -1,6 +1,6 @@
 {
-  "name": "VNAH - Ứng dụng Quản lý Nhân Kỹ Thuật",
-  "short_name": "VNAH",
+  "name": "VNAH QLNKT PUBLIC",
+  "short_name": "QLNKT",
   "description": "Hệ thống xác thực danh tính và quản lý thông tin nhân sự",
   "start_url": "/",
   "scope": "/",

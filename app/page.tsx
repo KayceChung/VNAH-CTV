@@ -1,7 +1,18 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+declare global {
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent;
+  }
+}
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 const APPSHEET_URL = "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
 
@@ -70,17 +81,44 @@ const features = [
 export default function HomePage() {
   const router = useRouter();
   const [installing, setInstalling] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
+    else if (action === "appsheet") {
+      handleInstallApp();
+    }
   }
 
-  const handleInstallApp = () => {
+  const handleInstallApp = async () => {
     setInstalling(true);
+    
+    if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`PWA install prompt outcome: ${outcome}`);
+      } catch (error) {
+        console.error("Error showing PWA install prompt:", error);
+      }
+    }
+    
     window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
-    setTimeout(() => setInstalling(false), 500);
+    setTimeout(() => setInstalling(false), 800);
   };
 
   return (
