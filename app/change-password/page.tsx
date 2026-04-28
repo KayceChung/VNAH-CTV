@@ -11,8 +11,8 @@ export default function ChangePasswordPage() {
 
   useEffect(() => {
     if (!session) {
-      pushToast("Phiên xác thực không tồn tại. Vui lòng đăng nhập lại.", "error");
-      router.replace("/verify");
+      pushToast("Phien xac thuc khong ton tai. Vui long dang nhap lai.", "error");
+      router.replace("/");
     }
   }, [pushToast, router, session]);
 
@@ -29,15 +29,15 @@ export default function ChangePasswordPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
             OK
           </div>
-          <h1 className="mt-5 text-3xl font-bold text-slate-950">Đã cập nhật thông tin thành công</h1>
+          <h1 className="mt-5 text-3xl font-bold text-slate-950">Da cap nhat thong tin thanh cong</h1>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Thông tin nhân sự, tên đăng nhập và mật khẩu đã được ghi trực tiếp vào Google Sheets thông qua Apps Script.
+            Thong tin nhan su, ten dang nhap va mat khau da duoc ghi truc tiep vao Google Sheets thong qua Apps Script.
           </p>
           <div className="mt-6 rounded-2xl border border-slate-200 bg-white/70 px-5 py-4 text-left text-sm leading-7 text-slate-700">
-            <p><strong>Họ tên:</strong> {session.employee.Name || "Chưa cập nhật"}</p>
-            <p><strong>Tên đăng nhập:</strong> {session.employee.ID_Employees || "Chưa cập nhật"}</p>
-            <p><strong>Email:</strong> {session.employee.Email || "Chưa cập nhật"}</p>
-            <p><strong>Zalo:</strong> {session.employee.Zalo || "Chưa cập nhật"}</p>
+            <p><strong>Ho ten:</strong> {session.employee.Name || "Chua cap nhat"}</p>
+            <p><strong>Ten dang nhap:</strong> {session.employee.ID_Employees || "Chua cap nhat"}</p>
+            <p><strong>Email:</strong> {session.employee.Email || "Chua cap nhat"}</p>
+            <p><strong>Zalo:</strong> {session.employee.Zalo || "Chua cap nhat"}</p>
           </div>
           <button
             type="button"
@@ -47,7 +47,7 @@ export default function ChangePasswordPage() {
             }}
             className="mt-6 inline-flex rounded-2xl bg-[#1E40AF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1D4ED8]"
           >
-            Quay về trang chủ
+            Quay ve trang xac thuc
           </button>
         </section>
       </div>

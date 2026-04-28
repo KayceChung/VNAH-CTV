@@ -16,9 +16,9 @@ try {
     $data = $content | ConvertFrom-Json
     
     if ($data.found) {
-        Write-Host "✅ Employee Record Found!" -ForegroundColor Green
+        Write-Host "[OK] Employee Record Found!" -ForegroundColor Green
         Write-Host ""
-        Write-Host "📋 Employee Details:" -ForegroundColor Yellow
+        Write-Host "[INFO] Employee Details:" -ForegroundColor Yellow
         Write-Host "  ID: $($data.employee.ID_Employees)"
         Write-Host "  Name: $($data.employee.Name)"
         Write-Host "  Email: $($data.employee.Email)"
@@ -32,15 +32,15 @@ try {
         Write-Host ""
         
         if ($data.employee.Status -like "*DEACTIVATE*") {
-            Write-Host "✅ SECURITY CHECK PASSED!" -ForegroundColor Green
-            Write-Host "   → Status is correctly set to: $($data.employee.Status)"
-            Write-Host "   → Account requires Admin approval before activation"
+            Write-Host "[OK] SECURITY CHECK PASSED!" -ForegroundColor Green
+            Write-Host "   -> Status is correctly set to: $($data.employee.Status)"
+            Write-Host "   -> Account requires Admin approval before activation"
         } else {
-            Write-Host "❌ SECURITY ERROR: Status should be DEACTIVATE!" -ForegroundColor Red
+            Write-Host "[ERROR] SECURITY ERROR: Status should be DEACTIVATE!" -ForegroundColor Red
         }
     } else {
-        Write-Host "❌ Employee not found: $($data.message)" -ForegroundColor Red
+        Write-Host "[ERROR] Employee not found: $($data.message)" -ForegroundColor Red
     }
 } catch {
-    Write-Host "❌ API Error: $_" -ForegroundColor Red
+    Write-Host "[ERROR] API Error: $_" -ForegroundColor Red
 }
