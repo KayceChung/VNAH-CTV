@@ -16,6 +16,14 @@ const MOBILE_INSTALL_URL =
 
 const LOCAL_INSTALL_PROTOCOL = "vnahshortcut://install";
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+};
+
 const features = [
   {
     icon: (
@@ -85,15 +93,23 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installing, setInstalling] = useState(false);
   const [installHint, setInstallHint] = useState("");
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [showWindowsGuide, setShowWindowsGuide] = useState(false);
 
   useEffect(() => {
-    // Cleanup on component unmount
+    const onBeforeInstallPrompt = (event: Event) => {
+      const promptEvent = event as BeforeInstallPromptEvent;
+      promptEvent.preventDefault();
+      setDeferredPrompt(promptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+
     return () => {
-      setInstallHint("");
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
     };
   }, []);
 
@@ -115,6 +131,24 @@ export default function HomePage() {
       const isWindowsDesktop = /windows nt/.test(ua) && !/android|iphone|ipad|ipod/.test(ua);
       const isAndroid = /android/.test(ua);
       const isIOS = /iphone|ipad|ipod/.test(ua);
+
+      // If PWA install prompt is available, show it first (all platforms)
+      if (deferredPrompt && isWindowsDesktop) {
+        setInstallHint("Hien thi giao dien cai dat ung dung...");
+        
+        deferredPrompt.prompt();
+        
+        const choice = await deferredPrompt.userChoice;
+        
+        if (choice.outcome === "accepted") {
+          setInstallHint("✓ Thanh cong! Ung dung da duoc cai dat. Hay tim icon tren Desktop hoac Start Menu.");
+        } else {
+          setInstallHint("Ban da huy cai dat.");
+        }
+        
+        setDeferredPrompt(null);
+        return;
+      }
 
       // Windows: Show guide to download and run installer
       if (isWindowsDesktop) {
