@@ -231,7 +231,7 @@ export default function HomePage() {
                   disabled={installing}
                   className="mt-3 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#667eea] to-[#764ba2] px-4 py-[14px] text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {installing ? "Dang xu ly..." : "Cai dat ung dung"}
+                  {installing ? "Đang xử lý..." : "Cài đặt ứng dụng"}
                 </button>
               ) : null}
             </div>
