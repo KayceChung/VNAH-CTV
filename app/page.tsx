@@ -1,9 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const APPSHEET_URL =
   "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
+
+const SHORTCUT_URL =
+  "https://www.appsheet.com/deploy/iosinappshortcut?appGuidString=44edd09d-1417-4503-a9aa-26111dd58fce&manifestToken=e0a2926f-8abf-4d5a-9349-8c9129388aa5";
+
+const LOCAL_INSTALL_PROTOCOL = "vnahshortcut://install";
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+};
 
 const features = [
   {
@@ -74,6 +88,24 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installing, setInstalling] = useState(false);
+  const [installHint, setInstallHint] = useState("");
+  const [showIosGuide, setShowIosGuide] = useState(false);
+
+  useEffect(() => {
+    const onBeforeInstallPrompt = (event: Event) => {
+      const promptEvent = event as BeforeInstallPromptEvent;
+      promptEvent.preventDefault();
+      setDeferredPrompt(promptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    };
+  }, []);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
@@ -81,10 +113,84 @@ export default function HomePage() {
     else if (action === "appsheet") window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
   }
 
+  const handleInstallShortcut = async () => {
+    if (installing) {
+      return;
+    }
+
+    setInstalling(true);
+
+    try {
+      const ua = navigator.userAgent.toLowerCase();
+      const isWindowsDesktop = /windows nt/.test(ua) && !/android|iphone|ipad|ipod/.test(ua);
+      const isAndroid = /android/.test(ua);
+      const isIOS = /iphone|ipad|ipod/.test(ua);
+
+      // On Windows, always prioritize OS-level shortcut installer protocol.
+      if (isWindowsDesktop) {
+        setInstallHint("Dang goi trinh cai shortcut tren may tinh... Neu chua cai protocol, hay chay setup_vnah_oneclick_protocol.bat mot lan.");
+
+        const protocolLink = document.createElement("a");
+        protocolLink.href = LOCAL_INSTALL_PROTOCOL;
+        protocolLink.style.display = "none";
+        document.body.appendChild(protocolLink);
+        protocolLink.click();
+        protocolLink.remove();
+
+        window.setTimeout(() => {
+          window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+        }, 1200);
+
+        return;
+      }
+
+      // Android can show install prompt (if browser/app meets PWA requirements).
+      if (isAndroid && deferredPrompt) {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        setDeferredPrompt(null);
+
+        if (choice.outcome === "accepted") {
+          setInstallHint("Da bat install prompt tren Android. Sau khi ban xac nhan, icon se hien tren man hinh chinh.");
+        } else {
+          setInstallHint("Ban da dong install prompt. Co the bam lai de thu tiep.");
+        }
+
+        return;
+      }
+
+      // iOS does not allow fully automatic home-screen install from web.
+      if (isIOS) {
+        setInstallHint("Da mo AppSheet. Vui long lam theo huong dan tren popup de them icon ra man hinh chinh.");
+        setShowIosGuide(true);
+        window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (deferredPrompt) {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        setDeferredPrompt(null);
+
+        if (choice.outcome === "accepted") {
+          setInstallHint("Da mo install prompt va ban da chap nhan cai dat.");
+        } else {
+          setInstallHint("Ban da dong install prompt. Co the bam lai de thu tiep.");
+        }
+
+        return;
+      }
+
+      setInstallHint("Trinh duyet hien tai khong cho phep cai dat tu dong 100%. Dang mo URL de ban cai thu cong.");
+      window.open(SHORTCUT_URL, "_blank", "noopener,noreferrer");
+    } finally {
+      setInstalling(false);
+    }
+  };
+
   return (
     <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
-        {/* Header */}
         <div className="flex flex-col items-center gap-3 text-center page-fade">
           <div className="flex items-center gap-3">
             <img
@@ -106,24 +212,20 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Cards */}
         <div className="grid gap-5 sm:grid-cols-3 page-fade">
           {features.map((feat) => (
             <div
               key={feat.action}
               className={`glass-card flex flex-col rounded-[28px] border border-slate-200/70 p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${feat.borderHover} cursor-default`}
             >
-              {/* Icon */}
               <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${feat.accentBg} ${feat.accentColor}`}>
                 {feat.icon}
               </div>
 
-              {/* Badge */}
               <span className={`mb-3 inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${feat.badgeColor}`}>
                 {feat.badge}
               </span>
 
-              {/* Text */}
               <h2 className="text-base font-bold leading-snug text-slate-900">
                 {feat.title}
               </h2>
@@ -131,7 +233,6 @@ export default function HomePage() {
                 {feat.description}
               </p>
 
-              {/* Button */}
               <button
                 type="button"
                 onClick={() => handleAction(feat.action)}
@@ -139,10 +240,51 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
+
+              {feat.action === "appsheet" ? (
+                <button
+                  type="button"
+                  onClick={handleInstallShortcut}
+                  disabled={installing}
+                  className="mt-3 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#667eea] to-[#764ba2] px-4 py-[14px] text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {installing ? "Dang xu ly..." : "Cai dat ung dung"}
+                </button>
+              ) : null}
             </div>
           ))}
         </div>
+
+        {installHint ? (
+          <p className="mt-4 whitespace-pre-line text-center text-sm font-medium text-slate-600">{installHint}</p>
+        ) : null}
       </div>
+
+      {showIosGuide ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4" role="dialog" aria-modal="true" aria-label="Huong dan cai dat tren iPhone">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+            <h2 className="text-lg font-bold text-slate-900">Cai dat icon tren iPhone/iPad</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              iOS khong cho phep cai tu dong 100%. Lam nhanh theo 4 buoc sau:
+            </p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
+              <li>Mo trang AppSheet vua duoc chuyen den.</li>
+              <li>Bam nut Share (hinh vuong co mui ten huong len).</li>
+              <li>Chon "Add to Home Screen".</li>
+              <li>Bam "Add" de hien icon ngoai man hinh.</li>
+            </ol>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowIosGuide(false)}
+                className="rounded-xl bg-[#1E40AF] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1D4ED8]"
+              >
+                Da hieu
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
