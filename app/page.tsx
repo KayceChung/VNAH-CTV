@@ -88,6 +88,7 @@ export default function HomePage() {
   const [installing, setInstalling] = useState(false);
   const [installHint, setInstallHint] = useState("");
   const [showIosGuide, setShowIosGuide] = useState(false);
+  const [showWindowsGuide, setShowWindowsGuide] = useState(false);
 
   useEffect(() => {
     // Cleanup on component unmount
@@ -115,15 +116,19 @@ export default function HomePage() {
       const isAndroid = /android/.test(ua);
       const isIOS = /iphone|ipad|ipod/.test(ua);
 
-      // Windows: Open AppSheet installer
+      // Windows: Show guide to download and run installer
       if (isWindowsDesktop) {
-        setInstallHint("Dang mo AppSheet de cai dat ung dung... Vui long cho may tinh xu ly.");
+        setInstallHint("Dang mo AppSheet de cai dat ung dung...");
         window.open(APPSHEET_INSTALL_URL, "_blank", "noopener,noreferrer");
+        
+        // Show Windows installation guide
+        setTimeout(() => {
+          setShowWindowsGuide(true);
+        }, 500);
         return;
       }
 
       // Android: AppSheet newshortcut URL installs the AppSheet app (via Play Store)
-      // then automatically adds the app icon to the home screen.
       if (isAndroid) {
         setInstallHint("Dang chuyen den Play Store / AppSheet de cai dat va them icon...");
         window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
@@ -239,6 +244,42 @@ export default function HomePage() {
                 Da hieu
               </button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showWindowsGuide ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4" role="dialog" aria-modal="true" aria-label="Huong dan cai dat tren Windows">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-slate-900">Tao Shortcut tren Desktop</h2>
+            <p className="mt-3 text-sm text-slate-600">
+              De tao icon VNAH tren Desktop cua ban, vui long:
+            </p>
+            <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm text-slate-700">
+              <li><strong>Tai file cai dat:</strong> Bam nut "Tai ve" ben duoi</li>
+              <li><strong>Chay file:</strong> Double-click file vua tai ve (neu Windows hoi, chon "Run anyway")</li>
+              <li><strong>Cho cho file chay:</strong> File se tu dong tao icon tren Desktop cua ban</li>
+              <li><strong>Thanh cong!</strong> Shortcut VNAH se xuat hien tren Desktop</li>
+            </ol>
+            <div className="mt-6 space-y-3">
+              <a
+                href="/install_vnah_desktop.bat"
+                download="install_vnah_desktop.bat"
+                className="flex w-full items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+              >
+                ⬇ Tai ve install_vnah_desktop.bat
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowWindowsGuide(false)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Dong
+              </button>
+            </div>
+            <p className="mt-4 text-xs text-slate-500">
+              💡 Tip: Neu file khong duoc tai ve, ban co the nhap truc tiep trong dia chi: <code className="bg-slate-100 px-1 font-mono">localhost:3000/install_vnah_desktop.bat</code>
+            </p>
           </div>
         </div>
       ) : null}
