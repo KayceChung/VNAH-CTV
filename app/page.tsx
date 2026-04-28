@@ -1,28 +1,9 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const APPSHEET_URL =
-  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
-
-// AppSheet desktop installation URL
-const APPSHEET_INSTALL_URL =
-  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
-
-// AppSheet-provided URL: installs AppSheet app then adds icon to home screen (mobile)
-const MOBILE_INSTALL_URL =
-  "https://www.appsheet.com/newshortcut/44edd09d-1417-4503-a9aa-26111dd58fce";
-
-const LOCAL_INSTALL_PROTOCOL = "vnahshortcut://install";
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-};
+const APPSHEET_URL = "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce";
 
 const features = [
   {
@@ -39,11 +20,9 @@ const features = [
     badgeColor: "bg-blue-50 text-[#1E40AF]",
     badge: "Tài khoản",
     title: "Kiểm tra & thay đổi thông tin tài khoản",
-    description:
-      "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
+    description: "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
     btnLabel: "Truy cập",
-    btnClass:
-      "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
+    btnClass: "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
     action: "verify",
   },
   {
@@ -61,11 +40,9 @@ const features = [
     badgeColor: "bg-red-50 text-red-700",
     badge: "Ứng dụng",
     title: "Truy cập ứng dụng",
-    description:
-      "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
+    description: "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
     btnLabel: "Truy cập",
-    btnClass:
-      "bg-red-600 text-white hover:bg-red-700",
+    btnClass: "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
   },
   {
@@ -85,33 +62,14 @@ const features = [
     title: "Đăng ký tài khoản",
     description: "Tạo tài khoản mới để tham gia hệ thống",
     btnLabel: "Đăng ký",
-    btnClass:
-      "bg-green-600 text-white hover:bg-green-700",
+    btnClass: "bg-green-600 text-white hover:bg-green-700",
     action: "register",
   },
 ];
 
 export default function HomePage() {
   const router = useRouter();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installing, setInstalling] = useState(false);
-  const [installHint, setInstallHint] = useState("");
-  const [showIosGuide, setShowIosGuide] = useState(false);
-  const [showWindowsGuide, setShowWindowsGuide] = useState(false);
-
-  useEffect(() => {
-    const onBeforeInstallPrompt = (event: Event) => {
-      const promptEvent = event as BeforeInstallPromptEvent;
-      promptEvent.preventDefault();
-      setDeferredPrompt(promptEvent);
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    };
-  }, []);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
@@ -119,70 +77,10 @@ export default function HomePage() {
     else if (action === "appsheet") window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
   }
 
-  const handleInstallShortcut = async () => {
-    if (installing) {
-      return;
-    }
-
+  const handleInstallApp = () => {
     setInstalling(true);
-
-    try {
-      const ua = navigator.userAgent.toLowerCase();
-      const isWindowsDesktop = /windows nt/.test(ua) && !/android|iphone|ipad|ipod/.test(ua);
-      const isAndroid = /android/.test(ua);
-      const isIOS = /iphone|ipad|ipod/.test(ua);
-
-      // If PWA install prompt is available, show it first (all platforms)
-      if (deferredPrompt && isWindowsDesktop) {
-        setInstallHint("Hien thi giao dien cai dat ung dung...");
-        
-        deferredPrompt.prompt();
-        
-        const choice = await deferredPrompt.userChoice;
-        
-        if (choice.outcome === "accepted") {
-          setInstallHint("✓ Thanh cong! Ung dung da duoc cai dat. Hay tim icon tren Desktop hoac Start Menu.");
-        } else {
-          setInstallHint("Ban da huy cai dat.");
-        }
-        
-        setDeferredPrompt(null);
-        return;
-      }
-
-      // Windows: Show guide to download and run installer
-      if (isWindowsDesktop) {
-        setInstallHint("Dang mo AppSheet de cai dat ung dung...");
-        window.open(APPSHEET_INSTALL_URL, "_blank", "noopener,noreferrer");
-        
-        // Show Windows installation guide
-        setTimeout(() => {
-          setShowWindowsGuide(true);
-        }, 500);
-        return;
-      }
-
-      // Android: AppSheet newshortcut URL installs the AppSheet app (via Play Store)
-      if (isAndroid) {
-        setInstallHint("Dang chuyen den Play Store / AppSheet de cai dat va them icon...");
-        window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
-        return;
-      }
-
-      // iOS: AppSheet newshortcut URL redirects to App Store if AppSheet not installed
-      if (isIOS) {
-        setInstallHint("Da mo AppSheet. Lam theo huong dan popup de hoan tat.");
-        setShowIosGuide(true);
-        window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
-        return;
-      }
-
-      // Other platforms: open AppSheet install URL
-      setInstallHint("Dang mo lien ket cai dat AppSheet...");
-      window.open(APPSHEET_INSTALL_URL, "_blank", "noopener,noreferrer");
-    } finally {
-      setInstalling(false);
-    }
+    window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
+    setTimeout(() => setInstalling(false), 500);
   };
 
   return (
@@ -198,7 +96,7 @@ export default function HomePage() {
               className="h-12 w-12 shrink-0 object-contain"
             />
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#1E40AF]">
-              VNAH QLDL CTV
+              VNAH QLNKT PUBLIC
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
@@ -241,7 +139,7 @@ export default function HomePage() {
               {feat.action === "appsheet" ? (
                 <button
                   type="button"
-                  onClick={handleInstallShortcut}
+                  onClick={handleInstallApp}
                   disabled={installing}
                   className="mt-3 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#667eea] to-[#764ba2] px-4 py-[14px] text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                 >
@@ -251,72 +149,7 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-
-        {installHint ? (
-          <p className="mt-4 whitespace-pre-line text-center text-sm font-medium text-slate-600">{installHint}</p>
-        ) : null}
       </div>
-
-      {showIosGuide ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4" role="dialog" aria-modal="true" aria-label="Huong dan cai dat tren iPhone">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-900">Cai dat icon tren iPhone / iPad</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              AppSheet da duoc mo. Lam theo 3 buoc de them icon ra man hinh chinh:
-            </p>
-            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
-              <li>Trong app AppSheet vua mo, bam nut <strong>Share</strong> (hinh vuong co mui ten &uarr;).</li>
-              <li>Chon <strong>&ldquo;Add to Home Screen&rdquo;</strong>.</li>
-              <li>Bam <strong>&ldquo;Add&rdquo;</strong> — icon se hien ngay tren man hinh chinh.</li>
-            </ol>
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowIosGuide(false)}
-                className="rounded-xl bg-[#1E40AF] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1D4ED8]"
-              >
-                Da hieu
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {showWindowsGuide ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4" role="dialog" aria-modal="true" aria-label="Huong dan cai dat tren Windows">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-900">Tao Shortcut tren Desktop</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              De tao icon VNAH tren Desktop cua ban, vui long:
-            </p>
-            <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm text-slate-700">
-              <li><strong>Tai file cai dat:</strong> Bam nut "Tai ve" ben duoi</li>
-              <li><strong>Chay file:</strong> Double-click file vua tai ve (neu Windows hoi, chon "Run anyway")</li>
-              <li><strong>Cho cho file chay:</strong> File se tu dong tao icon tren Desktop cua ban</li>
-              <li><strong>Thanh cong!</strong> Shortcut VNAH se xuat hien tren Desktop</li>
-            </ol>
-            <div className="mt-6 space-y-3">
-              <a
-                href="/install_vnah_desktop.bat"
-                download="install_vnah_desktop.bat"
-                className="flex w-full items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
-              >
-                ⬇ Tai ve install_vnah_desktop.bat
-              </a>
-              <button
-                type="button"
-                onClick={() => setShowWindowsGuide(false)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Dong
-              </button>
-            </div>
-            <p className="mt-4 text-xs text-slate-500">
-              💡 Tip: Neu file khong duoc tai ve, ban co the nhap truc tiep trong dia chi: <code className="bg-slate-100 px-1 font-mono">localhost:3000/install_vnah_desktop.bat</code>
-            </p>
-          </div>
-        </div>
-      ) : null}
     </main>
   );
 }
