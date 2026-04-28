@@ -122,14 +122,36 @@ export default function HomePage() {
     setInstalling(true);
 
     try {
+      // First, try to use PWA install prompt (desktop Chrome, Edge, etc.)
+      if (deferredPrompt) {
+        setInstallHint("Hien thi giao dien cai dat ung dung...");
+        
+        // Show the install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for user to make a choice
+        const choice = await deferredPrompt.userChoice;
+        
+        if (choice.outcome === "accepted") {
+          setInstallHint("Cam on! Ung dung da duoc cai dat. Ban co the tim thay icon tren desktop hoac Start Menu.");
+        } else {
+          setInstallHint("Ban da tu choi cai dat.");
+        }
+        
+        // Clear the deferred prompt
+        setDeferredPrompt(null);
+        return;
+      }
+
+      // If PWA install not available, fall back to platform-specific installation
       const ua = navigator.userAgent.toLowerCase();
       const isWindowsDesktop = /windows nt/.test(ua) && !/android|iphone|ipad|ipod/.test(ua);
       const isAndroid = /android/.test(ua);
       const isIOS = /iphone|ipad|ipod/.test(ua);
 
-      // On Windows, always prioritize OS-level shortcut installer protocol.
       if (isWindowsDesktop) {
-        setInstallHint("Dang goi trinh cai shortcut tren may tinh... Neu chua cai protocol, hay chay setup_vnah_oneclick_protocol.bat mot lan.");
+        // Try Windows protocol handler for native app
+        setInstallHint("Dang goi trinh cai dat... Neu chua cai, hay chay setup_vnah_oneclick_protocol.bat mot lan.");
 
         const protocolLink = document.createElement("a");
         protocolLink.href = LOCAL_INSTALL_PROTOCOL;
@@ -138,7 +160,7 @@ export default function HomePage() {
         protocolLink.click();
         protocolLink.remove();
 
-        // Fallback: if protocol not registered, open browser install URL
+        // Fallback: if protocol not registered, open AppSheet install URL
         window.setTimeout(() => {
           window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         }, 1200);
@@ -146,16 +168,12 @@ export default function HomePage() {
         return;
       }
 
-      // Android: AppSheet newshortcut URL installs the AppSheet app (via Play Store
-      // if needed) then automatically adds the app icon to the home screen.
       if (isAndroid) {
-        setInstallHint("Dang chuyen den Play Store / AppSheet de cai dat va them icon...");
+        setInstallHint("Dang mo Play Store / AppSheet de cai dat va them icon...");
         window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
         return;
       }
 
-      // iOS: AppSheet newshortcut URL redirects to App Store if AppSheet not
-      // installed, then guides user to add the icon. Show a brief popup.
       if (isIOS) {
         setInstallHint("Da mo AppSheet. Lam theo huong dan popup de hoan tat.");
         setShowIosGuide(true);
@@ -163,7 +181,7 @@ export default function HomePage() {
         return;
       }
 
-      // Other mobile/desktop without Windows protocol: open install URL directly.
+      // Other platforms: open AppSheet install URL directly
       setInstallHint("Dang mo lien ket cai dat AppSheet...");
       window.open(MOBILE_INSTALL_URL, "_blank", "noopener,noreferrer");
     } finally {
