@@ -12,7 +12,6 @@ import {
 } from "react";
 import type { AuthSession } from "@/types/employee";
 import { ToastViewport } from "@/components/Toast";
-import { useServiceWorkerRegistration } from "@/lib/useServiceWorkerRegistration";
 
 type ToastTone = "success" | "error" | "info";
 
@@ -35,9 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSessionState] = useState<AuthSession | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timeoutMap = useRef<Map<string, number>>(new Map());
-
-  // Register service worker for PWA support
-  useServiceWorkerRegistration();
 
   useEffect(() => {
     const activeTimeouts = timeoutMap.current;

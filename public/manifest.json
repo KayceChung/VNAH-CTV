@@ -8,7 +8,6 @@
   "theme_color": "#00a3ff",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
-  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo.ico",
@@ -20,7 +19,7 @@
       "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -38,19 +37,6 @@
       "short_name": "Xác thực",
       "description": "Xác thực thông tin nhân sự",
       "url": "/verify",
-      "icons": [
-        {
-          "src": "/logo.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Thay đổi mật khẩu",
-      "short_name": "Mật khẩu",
-      "description": "Thay đổi mật khẩu của tôi",
-      "url": "/change-password",
       "icons": [
         {
           "src": "/logo.png",
