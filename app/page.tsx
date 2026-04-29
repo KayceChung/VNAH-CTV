@@ -41,10 +41,12 @@ const features = [
     title: "Truy cập và cài đặt ứng dụng",
     description:
       "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
-    btnLabel: "📥 Cài đặt ứng dụng",
+    btnLabel1: "Truy cập",
+    btnLabel2: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
+    hasTwoButtons: true,
   },
   {
     icon: (
@@ -137,6 +139,16 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
+
+              {feat.hasTwoButtons && (
+                <button
+                  type="button"
+                  onClick={() => handleAction(feat.action)}
+                  className={`mt-3 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition hover:shadow-lg ${feat.btnClass}`}
+                >
+                  {feat.btnLabel2}
+                </button>
+              )}
             </div>
           ))}
         </div>
