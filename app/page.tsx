@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -78,11 +76,11 @@ export default function HomePage() {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
     else if (action === "appsheet")
-      window.open(
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
-        "_blank",
-        "noopener,noreferrer"
-      );
+      window.location.href =
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
+    else if (action === "install")
+      window.location.href =
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
   }
 
   return (
@@ -138,7 +136,15 @@ export default function HomePage() {
                 {feat.btnLabel}
               </button>
 
-              {feat.action === "appsheet" ? <PWAInstaller /> : null}
+              {feat.action === "appsheet" ? (
+                <button
+                  type="button"
+                  onClick={() => handleAction("install")}
+                  className="w-full mt-3 flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:brightness-110"
+                >
+                  📥 Cài đặt ứng dụng
+                </button>
+              ) : null}
             </div>
           ))}
         </div>
