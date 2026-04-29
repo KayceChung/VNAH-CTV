@@ -2,7 +2,7 @@
   "name": "VNAH QLNKT PUBLIC",
   "short_name": "QLNKT",
   "description": "Hệ thống xác thực danh tính và quản lý thông tin nhân sự",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#00a3ff",
