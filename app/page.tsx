@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastViewport } from "@/components/Toast";
 
 const features = [
@@ -77,6 +77,17 @@ const features = [
 export default function HomePage() {
   const router = useRouter();
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; tone: "success" | "error" | "info" }>>([]);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
 
   const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -144,18 +155,29 @@ export default function HomePage() {
       );
     }
     else if (action === "appsheet-install") {
-      // Open AppSheet URL and show installation instructions
-      window.open(
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
-        "_blank",
-        "noopener,noreferrer"
-      );
-      
-      // Show PWA installation instructions
-      showToast(
-        "� HƯỚNG DẪN: Khi cửa sổ AppSheet mở, hãy:\n• Windows: Click menu ⋮ → 'Install this app'\n• Mac: Nhấn ⌘ + D → 'Add to Dock'\nIcon sẽ xuất hiện trên màn hình chính của bạn!",
-        "info"
-      );
+      if (deferredPrompt) {
+        // Trigger PWA installation prompt
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult: any) => {
+          if (choiceResult.outcome === "accepted") {
+            showToast("✅ Ứng dụng được cài đặt thành công!", "success");
+          } else {
+            showToast("⏭️ Cài đặt ứng dụng được hủy bỏ.", "info");
+          }
+        });
+        setDeferredPrompt(null);
+      } else {
+        // Fallback: Open AppSheet with instructions
+        window.open(
+          "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
+          "_blank",
+          "noopener,noreferrer"
+        );
+        showToast(
+          "💡 PWA chưa khả dụng. Vui lòng sử dụng menu trình duyệt (⋮) → 'Cài đặt ứng dụng'",
+          "info"
+        );
+      }
     }
   }
 
