@@ -25,6 +25,8 @@ const APPSHEET_CONFIG = {
   // URL mobile cho AppSheet shortcut
   mobileURL:
     "https://www.appsheet.com/newshortcut/44edd09d-1417-4503-a9aa-26111dd58fce",
+  // PowerShell install script
+  psScript: "/vnah-install.ps1",
 };
 
 const REDIRECT_DELAY = 1500; // ms
@@ -132,74 +134,152 @@ export default function AppSheetInstaller({
     trackEvent("install_initiated", "AppSheet", platformInfo.type);
 
     try {
-      let urlToOpen = "";
-      let messageText = "";
+      if (platformInfo.type === "windows") {
+        // Windows Desktop: Download and run installer batch script
+        setState((prev) => ({
+          ...prev,
+          message: "🔄 Đang tải bộ cài đặt từ server...",
+        }));
 
-      if (platformInfo.isDesktop) {
-        // Desktop: mở URL với platform=desktop
-        urlToOpen = APPSHEET_CONFIG.desktopURL;
-        messageText =
-          "🔄 Đang chuyển hướng tới AppSheet để cài đặt ứng dụng desktop...";
+        trackEvent("install_windows_initiated", "AppSheet");
+
+        // Get the base URL of the current site
+        const baseUrl =
+          typeof window !== "undefined"
+            ? `${window.location.protocol}//${window.location.host}`
+            : "";
+
+        // Download vnah-install.bat
+        const batUrl = `${baseUrl}/vnah-install.bat`;
+
+        setState((prev) => ({
+          ...prev,
+          message: "🔄 Đang chạy bộ cài đặt...",
+        }));
+
+        // Create a link element to trigger download
+        const link = document.createElement("a");
+        link.href = batUrl;
+        link.download = "vnah-install.bat";
+        link.style.display = "none";
+        document.body.appendChild(link);
+
+        // Trigger download
+        link.click();
+        document.body.removeChild(link);
+
+        trackEvent("install_batch_downloaded", "AppSheet");
+
+        // After 3 seconds, show message
+        setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            redirecting: false,
+            message:
+              "✅ Bộ cài đặt đã được tải. Nếu không tự động chạy, vui lòng:\n1. Mở thư mục Downloads\n2. Nhấp chuột phải vào vnah-install.bat\n3. Chọn 'Run as administrator'",
+          }));
+          setShowFallback(true);
+          trackEvent("install_fallback_shown", "AppSheet", "windows");
+        }, 3000);
+
+        return;
+      } else if (platformInfo.isDesktop) {
+        // Mac/Linux: Open AppSheet with platform=desktop
+        setState((prev) => ({
+          ...prev,
+          message: "🔄 Đang chuyển hướng tới AppSheet...",
+        }));
 
         trackEvent("install_desktop_initiated", "AppSheet");
+
+        await new Promise((resolve) => setTimeout(resolve, REDIRECT_DELAY));
+
+        try {
+          window.open(APPSHEET_CONFIG.desktopURL, "_blank", "noopener,noreferrer");
+          trackEvent("install_url_opened", "AppSheet", platformInfo.type);
+        } catch (openError) {
+          console.error("Error opening URL:", openError);
+          trackEvent("install_url_error", "AppSheet", platformInfo.type);
+          throw new Error("Không thể mở liên kết cài đặt");
+        }
+
+        setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            redirecting: false,
+            message:
+              "✅ Cửa sổ AppSheet đã được mở. Nếu không hiện ra, hãy bấm nút bên dưới.",
+          }));
+          setShowFallback(true);
+          trackEvent("install_fallback_shown", "AppSheet", platformInfo.type);
+        }, 2000);
       } else if (platformInfo.type === "android") {
         // Android: mở URL mobile install
-        urlToOpen = APPSHEET_CONFIG.mobileURL;
-        messageText =
-          "🔄 Đang chuyển hướng tới Play Store để cài đặt ứng dụng...";
+        setState((prev) => ({
+          ...prev,
+          message: "🔄 Đang chuyển hướng tới Play Store để cài đặt ứng dụng...",
+        }));
 
         trackEvent("install_android_initiated", "AppSheet");
+
+        await new Promise((resolve) => setTimeout(resolve, REDIRECT_DELAY));
+
+        try {
+          window.open(APPSHEET_CONFIG.mobileURL, "_blank", "noopener,noreferrer");
+          trackEvent("install_url_opened", "AppSheet", "android");
+        } catch (openError) {
+          console.error("Error opening URL:", openError);
+          trackEvent("install_url_error", "AppSheet", "android");
+          throw new Error("Không thể mở Play Store");
+        }
+
+        setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            redirecting: false,
+            message:
+              "✅ Play Store đã được mở. Nếu không hiện ra, hãy bấm nút bên dưới.",
+          }));
+          setShowFallback(true);
+          trackEvent("install_fallback_shown", "AppSheet", "android");
+        }, 2000);
       } else if (platformInfo.type === "ios") {
         // iOS: mở URL và hiện guide
-        urlToOpen = APPSHEET_CONFIG.mobileURL;
-        messageText =
-          "🔄 Đang chuyển hướng tới App Store để cài đặt ứng dụng...";
+        setState((prev) => ({
+          ...prev,
+          message: "🔄 Đang chuyển hướng tới App Store để cài đặt ứng dụng...",
+        }));
 
         trackEvent("install_ios_initiated", "AppSheet");
+
+        await new Promise((resolve) => setTimeout(resolve, REDIRECT_DELAY));
+
+        try {
+          window.open(APPSHEET_CONFIG.mobileURL, "_blank", "noopener,noreferrer");
+          trackEvent("install_url_opened", "AppSheet", "ios");
+        } catch (openError) {
+          console.error("Error opening URL:", openError);
+          trackEvent("install_url_error", "AppSheet", "ios");
+          throw new Error("Không thể mở App Store");
+        }
 
         // Show iOS guide sau khi open URL
         setTimeout(() => {
           setIosGuideVisible(true);
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            redirecting: false,
+          }));
         }, REDIRECT_DELAY + 500);
-      } else {
-        // Other: use base URL
-        urlToOpen = APPSHEET_CONFIG.baseURL;
-        messageText =
-          "🔄 Đang chuyển hướng tới AppSheet để cài đặt ứng dụng...";
 
-        trackEvent("install_other_initiated", "AppSheet");
+        trackEvent("install_ios_guide_shown", "AppSheet");
+
+        return;
       }
-
-      setState((prev) => ({
-        ...prev,
-        message: messageText,
-      }));
-
-      // Delay để người dùng thấy thông báo
-      await new Promise((resolve) => setTimeout(resolve, REDIRECT_DELAY));
-
-      // Mở URL
-      try {
-        window.open(urlToOpen, "_blank", "noopener,noreferrer");
-        trackEvent("install_url_opened", "AppSheet", platformInfo.type);
-      } catch (openError) {
-        console.error("Error opening URL:", openError);
-        trackEvent("install_url_error", "AppSheet", platformInfo.type);
-        throw new Error("Không thể mở liên kết cài đặt");
-      }
-
-      // Fallback: show notification
-      setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          redirecting: false,
-          message:
-            "✅ Cửa sổ AppSheet đã được mở. Nếu không hiện ra, hãy bấm nút bên dưới.",
-        }));
-        setShowFallback(true);
-        trackEvent("install_fallback_shown", "AppSheet", platformInfo.type);
-      }, 2000);
     } catch (error) {
       const errorMsg =
         error instanceof Error ? error.message : "Lỗi không xác định";
@@ -210,12 +290,7 @@ export default function AppSheetInstaller({
         error: errorMsg,
         message: "",
       }));
-      trackEvent(
-        "install_error",
-        "AppSheet",
-        platformInfo.type,
-        1
-      );
+      trackEvent("install_error", "AppSheet", platformInfo.type, 1);
       setShowFallback(true);
     }
   };
