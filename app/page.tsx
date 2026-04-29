@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -136,15 +137,7 @@ export default function HomePage() {
                 {feat.btnLabel}
               </button>
 
-              {feat.action === "appsheet" && (
-                <button
-                  type="button"
-                  onClick={() => handleAction("install")}
-                  className="w-full mt-3 flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:brightness-110"
-                >
-                  📥 Cài đặt ứng dụng
-                </button>
-              )}
+              {feat.action === "appsheet" && <PWAInstaller />}
             </div>
           ))}
         </div>
