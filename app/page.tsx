@@ -136,7 +136,7 @@ export default function HomePage() {
                 {feat.btnLabel}
               </button>
 
-              {feat.action === "appsheet" ? (
+              {feat.action === "appsheet" && (
                 <button
                   type="button"
                   onClick={() => handleAction("install")}
@@ -144,7 +144,7 @@ export default function HomePage() {
                 >
                   📥 Cài đặt ứng dụng
                 </button>
-              ) : null}
+              )}
             </div>
           ))}
         </div>
