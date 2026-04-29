@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 const features = [
   {
@@ -47,7 +46,6 @@ const features = [
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
-    action2: "install",
     hasTwoButtons: true,
   },
   {
@@ -75,39 +73,17 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-  }, []);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
     else if (action === "appsheet") {
-      // Open AppSheet URL in new tab
+      // Open AppSheet URL - AppSheet will show its own PWA install prompt
       window.open(
         "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
         "_blank",
         "noopener,noreferrer"
       );
-    }
-    else if (action === "install") {
-      // Trigger PWA installation prompt
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult: any) => {
-          if (choiceResult.outcome === "accepted") {
-            setDeferredPrompt(null);
-          }
-        });
-      }
     }
   }
 
@@ -167,7 +143,7 @@ export default function HomePage() {
               {feat.hasTwoButtons && (
                 <button
                   type="button"
-                  onClick={() => handleAction(feat.action2 || feat.action)}
+                  onClick={() => handleAction(feat.action)}
                   className={`mt-3 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition hover:shadow-lg ${feat.btnClass}`}
                 >
                   {feat.btnLabel2}
