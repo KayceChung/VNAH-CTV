@@ -81,14 +81,16 @@ export default function HomePage() {
   const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, tone }]);
+    // Longer duration for installation instructions (10 seconds)
+    const duration = tone === "info" && message.includes("HƯỚNG DẪN") ? 10000 : 6000;
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 6000);
+    }, duration);
   };
 
   const createDesktopShortcut = async () => {
     try {
-      showToast("🔄 Đang tạo shortcut trên Desktop của bạn...", "info");
+      showToast("� Đang tải file cài đặt...", "info");
 
       const response = await fetch("/api/create-shortcut", {
         method: "POST",
@@ -102,20 +104,29 @@ export default function HomePage() {
       });
 
       if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "create-appsheet-shortcut.bat";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
         showToast(
-          "✅ Icon ứng dụng đã được tạo trên Desktop của bạn! Bạn có thể click vào nó để mở AppSheet.",
+          "✅ File đã được tải xuống! Hãy mở file 'create-appsheet-shortcut.bat' để tạo shortcut trên Desktop.",
           "success"
         );
       } else {
-        const error = await response.json();
         showToast(
-          `❌ Lỗi: ${error.details || "Không thể tạo shortcut. Hãy thử lại hoặc chạy với quyền Administrator."}`,
+          "❌ Lỗi: Không thể tải file. Hãy thử lại.",
           "error"
         );
       }
     } catch (error) {
       showToast(
-        `❌ Lỗi kết nối: ${error instanceof Error ? error.message : "Không biết"}`,
+        `❌ Lỗi: ${error instanceof Error ? error.message : "Không biết"}`,
         "error"
       );
     }
@@ -133,8 +144,18 @@ export default function HomePage() {
       );
     }
     else if (action === "appsheet-install") {
-      // Create desktop shortcut
-      createDesktopShortcut();
+      // Open AppSheet URL and show installation instructions
+      window.open(
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
+        "_blank",
+        "noopener,noreferrer"
+      );
+      
+      // Show PWA installation instructions
+      showToast(
+        "� HƯỚNG DẪN: Khi cửa sổ AppSheet mở, hãy:\n• Windows: Click menu ⋮ → 'Install this app'\n• Mac: Nhấn ⌘ + D → 'Add to Dock'\nIcon sẽ xuất hiện trên màn hình chính của bạn!",
+        "info"
+      );
     }
   }
 

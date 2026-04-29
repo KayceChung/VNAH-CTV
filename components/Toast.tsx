@@ -27,11 +27,11 @@ export function ToastViewport({
             key={toast.id}
             className={`pointer-events-auto flex items-start justify-between gap-3 rounded-2xl border px-4 py-3 shadow-lg ${toneClasses[toast.tone]}`}
           >
-            <p className="text-sm font-medium leading-6">{toast.message}</p>
+            <p className="text-sm font-medium leading-6 whitespace-pre-wrap">{toast.message}</p>
             <button
               type="button"
               onClick={() => onDismiss(toast.id)}
-              className="rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] opacity-70 transition hover:opacity-100"
+              className="rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] opacity-70 transition hover:opacity-100 shrink-0"
             >
               Dong
             </button>

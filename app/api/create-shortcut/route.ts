@@ -1,8 +1,4 @@
-import { exec, ExecOptions } from "child_process";
-import { promisify } from "util";
 import { NextRequest, NextResponse } from "next/server";
-
-const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,43 +11,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // PowerShell script to create desktop shortcut
-    const psScript = `
-$DesktopPath = [Environment]::GetFolderPath("Desktop")
-$ShortcutPath = "$DesktopPath\\${appName || "AppSheet"}.lnk"
+    // Create a batch script that creates the shortcut
+    const batScript = `@echo off
+setlocal enabledelayedexpansion
 
-$Shell = New-Object -ComObject WScript.Shell
-$Shortcut = $Shell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = "${appUrl}"
-$Shortcut.Description = "Ứng dụng VNAH QLNKT"
-$Shortcut.Save()
+REM Get Desktop path
+set "DesktopPath=%USERPROFILE%\\Desktop"
 
-Write-Output "Shortcut created successfully at $ShortcutPath"
-`;
+REM Create shortcut using VBScript embedded in batch
+set "ShortcutName=${appName || "VNAH QLNKT"}.lnk"
 
-    // Execute PowerShell command
-    const execOptions: ExecOptions = {
-      shell: "/bin/bash",
-    };
-    const { stdout, stderr } = await (execAsync as any)(
-      `powershell -Command "${psScript.replace(/"/g, '\\"')}"`,
-      execOptions
-    );
+REM Create VBScript to make the shortcut
+set "VBSFile=%temp%\\CreateShortcut.vbs"
 
-    if (stderr && !stderr.includes("Security warning")) {
-      throw new Error(stderr);
-    }
+(
+    echo Set oWS = WScript.CreateObject("WScript.Shell"^)
+    echo sLinkFile = "%DesktopPath%\\" + "${appName || "VNAH QLNKT"}.lnk"
+    echo Set oLink = oWS.CreateShortcut(sLinkFile^)
+    echo oLink.TargetPath = "${appUrl}"
+    echo oLink.Description = "Ứng dụng VNAH QLNKT"
+    echo oLink.Save
+    echo MsgBox "✓ Shortcut đã được tạo thành công trên Desktop!", 64, "Hoàn thành"
+) > "%VBSFile%"
 
-    return NextResponse.json({
-      success: true,
-      message: "Desktop shortcut created successfully",
-      stdout: stdout.trim(),
+REM Execute the VBScript
+cscript.exe "%VBSFile%"
+
+REM Clean up
+del "%VBSFile%"
+
+pause`;
+
+    // Return the script as a file download
+    const encoder = new TextEncoder();
+    const encodedScript = encoder.encode(batScript);
+
+    return new NextResponse(encodedScript, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/x-msdownload",
+        "Content-Disposition": 'attachment; filename="create-appsheet-shortcut.bat"',
+        "Content-Length": String(encodedScript.length),
+      },
     });
   } catch (error) {
-    console.error("Error creating shortcut:", error);
+    console.error("Error creating shortcut script:", error);
     return NextResponse.json(
       {
-        error: "Failed to create shortcut",
+        error: "Failed to generate shortcut script",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
