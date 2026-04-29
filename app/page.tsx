@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AppSheetInstaller from "@/components/AppSheetInstaller";
+import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -73,34 +73,20 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [skipAutoInstall, setSkipAutoInstall] = useState(false);
 
-  useEffect(() => {
-    // Check if user clicked "skip" button before, stored in sessionStorage
-    const skipped = sessionStorage.getItem("skipAppSheetInstall");
-    if (skipped) {
-      setSkipAutoInstall(true);
-    }
-  }, []);
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") {
-      // Skip auto-install prompt next time
-      sessionStorage.setItem("skipAppSheetInstall", "true");
+    else if (action === "appsheet")
       window.open(
         "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
         "_blank",
         "noopener,noreferrer"
       );
-    }
   }
 
   return (
     <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
-      {/* AppSheet Auto-Installer - runs automatically unless skipped */}
-      {!skipAutoInstall && <AppSheetInstaller autoInstall={true} showUI={true} />}
-
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
         <div className="flex flex-col items-center gap-3 text-center page-fade">
           <div className="flex items-center gap-3">
@@ -151,6 +137,8 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
+
+              {feat.action === "appsheet" ? <PWAInstaller /> : null}
             </div>
           ))}
         </div>

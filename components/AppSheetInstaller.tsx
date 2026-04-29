@@ -154,7 +154,7 @@ export default function AppSheetInstaller({
 
         setState((prev) => ({
           ...prev,
-          message: "🔄 Đang chạy bộ cài đặt...",
+          message: "🔄 Đang tải bộ cài đặt...",
         }));
 
         // Create a link element to trigger download
@@ -170,18 +170,18 @@ export default function AppSheetInstaller({
 
         trackEvent("install_batch_downloaded", "AppSheet");
 
-        // After 3 seconds, show message
+        // After 2 seconds, show message with instructions
         setTimeout(() => {
           setState((prev) => ({
             ...prev,
             loading: false,
             redirecting: false,
             message:
-              "✅ Bộ cài đặt đã được tải. Nếu không tự động chạy, vui lòng:\n1. Mở thư mục Downloads\n2. Nhấp chuột phải vào vnah-install.bat\n3. Chọn 'Run as administrator'",
+              "✅ Bộ cài đặt đã được tải trong thư mục Downloads!\n\nNhấp chuột phải vào vnah-install.bat → Chọn 'Run as administrator'",
           }));
           setShowFallback(true);
           trackEvent("install_fallback_shown", "AppSheet", "windows");
-        }, 3000);
+        }, 2000);
 
         return;
       } else if (platformInfo.isDesktop) {
