@@ -13,7 +13,6 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const INSTALLED_KEY = "vnah-app-installed";
-const APPSHEET_INSTALLED_KEY = "appsheet-app-installed";
 
 function detectDeviceType(): DeviceType {
   // UA check is enough here because we only need broad UX branches.
@@ -40,7 +39,7 @@ function getAutoHint(device: DeviceType, hasPrompt: boolean): string {
   }
 
   if (device === "iphone") {
-    return "iPhone: Sau khi cai dat AppSheet, hay bam nut Share (goc duoi ben phai), chon 'Add to Home Screen', sau do bam Add.";
+    return "iPhone: Nhan nut Share (o thanh duoi), chon 'Add to Home Screen', sau do bam Add.";
   }
 
   return "May tinh: Nhan bieu tuong sao (bookmark) hoac menu trinh duyet de tao shortcut ra man hinh.";
@@ -53,7 +52,6 @@ export function InstallAppCard() {
   const [hasBrowserInstall, setHasBrowserInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [message, setMessage] = useState("Dang xac dinh thiet bi...");
-  const [iosStep, setIosStep] = useState<"initial" | "downloading" | "downloaded">("initial");
 
   useEffect(() => {
     const currentDevice = detectDeviceType();
@@ -113,19 +111,11 @@ export function InstallAppCard() {
     }
 
     if (isInstalling) {
-      if (device === "iphone") {
-        if (iosStep === "downloading") {
-          return "Dang tai AppSheet...";
-        }
-        if (iosStep === "downloaded") {
-          return "✓ Cai dat AppSheet thanh cong";
-        }
-      }
       return "Dang xu ly...";
     }
 
     return "Cai dat ung dung";
-  }, [isInstalled, isInstalling, device, iosStep]);
+  }, [isInstalled, isInstalling]);
 
   const handleInstall = async () => {
     if (isInstalled || isInstalling) {
@@ -136,43 +126,7 @@ export function InstallAppCard() {
 
     try {
       if (device === "iphone") {
-        // For iOS, we need a 2-step process:
-        // 1. Try to open AppSheet app directly (if installed)
-        // 2. If not responding after timeout, redirect to App Store
-        
-        const appStoreUrl = "https://apps.apple.com/app/appsheet/id1097914718";
-        
-        // Try to open AppSheet app with its URL scheme (if installed)
-        // AppSheet URL scheme for opening VNAH app
-        const appsheetUrl = `appsheet://app/44edd09d-1417-4503-a9aa-26111dd58fce`;
-        
-        setIosStep("downloading");
-        setMessage(
-          "Dang kiem tra AppSheet...\n\nNeu AppSheet chua duoc cai dat, trang se tu dong chuyen den App Store."
-        );
-
-        // Try to open app scheme
-        const appOpened = tryOpenAppScheme(appsheetUrl);
-        
-        if (appOpened) {
-          // App might be installed, wait a moment then mark as downloaded
-          setTimeout(() => {
-            setIosStep("downloaded");
-            setMessage(
-              "AppSheet da mo thanh cong!\n\nBay gio, bam nut Share (goc duoi ben phai) tren man hinh nay, chon 'Add to Home Screen', sau do bam Add de tao shortcut tren Home Screen."
-            );
-            setIsInstalling(false);
-          }, 1500);
-        } else {
-          // App not installed, redirect to App Store
-          setTimeout(() => {
-            setIosStep("downloading");
-            setMessage(
-              "AppSheet chua duoc cai dat. Dang mo App Store...\n\nSau khi cai dat AppSheet, hay quay lai trang nay va click nut Share de tao shortcut."
-            );
-            window.location.href = appStoreUrl;
-          }, 1000);
-        }
+        setMessage("Huong dan iPhone: Mo Share -> Add to Home Screen -> Add.");
         return;
       }
 
@@ -205,39 +159,9 @@ export function InstallAppCard() {
         setMessage("Trinh duyet khong ho tro install prompt. Vui long tao shortcut thu cong tu menu trinh duyet.");
       }
     } finally {
-      setTimeout(() => {
-        setIsInstalling(false);
-      }, 500);
+      setIsInstalling(false);
     }
   };
-
-  /**
-   * Try to open an app via its URL scheme.
-   * Returns true if the scheme appears to have been handled (app might be installed).
-   * Returns false if the app is likely not installed.
-   */
-  function tryOpenAppScheme(scheme: string): boolean {
-    try {
-      // Create an iframe to test if the scheme is registered
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-
-      const timeout = setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 2000);
-
-      iframe.onload = () => {
-        clearTimeout(timeout);
-        document.body.removeChild(iframe);
-      };
-
-      iframe.src = scheme;
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
   return (
     <div className="mt-5 rounded-3xl border border-cyan-200/70 bg-gradient-to-br from-cyan-50 via-white to-indigo-50 p-4 shadow-[0_10px_30px_rgba(14,116,144,0.16)]">
@@ -255,9 +179,7 @@ export function InstallAppCard() {
         {buttonLabel}
       </button>
 
-      <p className="mt-3 rounded-2xl bg-white/80 px-3 py-2 text-sm leading-6 text-slate-700 whitespace-pre-wrap">
-        {message}
-      </p>
+      <p className="mt-3 rounded-2xl bg-white/80 px-3 py-2 text-sm leading-6 text-slate-700">{message}</p>
     </div>
   );
 }

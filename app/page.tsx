@@ -1,9 +1,8 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const APPSHEET_URL = "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
+import AppSheetInstaller from "@/components/AppSheetInstaller";
 
 const features = [
   {
@@ -20,9 +19,11 @@ const features = [
     badgeColor: "bg-blue-50 text-[#1E40AF]",
     badge: "Tài khoản",
     title: "Kiểm tra & thay đổi thông tin tài khoản",
-    description: "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
+    description:
+      "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
     btnLabel: "Truy cập",
-    btnClass: "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
+    btnClass:
+      "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
     action: "verify",
   },
   {
@@ -40,9 +41,11 @@ const features = [
     badgeColor: "bg-red-50 text-red-700",
     badge: "Ứng dụng",
     title: "Truy cập ứng dụng",
-    description: "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
+    description:
+      "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
     btnLabel: "Truy cập",
-    btnClass: "bg-red-600 text-white hover:bg-red-700",
+    btnClass:
+      "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
   },
   {
@@ -62,30 +65,42 @@ const features = [
     title: "Đăng ký tài khoản",
     description: "Tạo tài khoản mới để tham gia hệ thống",
     btnLabel: "Đăng ký",
-    btnClass: "bg-green-600 text-white hover:bg-green-700",
+    btnClass:
+      "bg-green-600 text-white hover:bg-green-700",
     action: "register",
   },
 ];
 
 export default function HomePage() {
   const router = useRouter();
-  const [installing, setInstalling] = useState(false);
+  const [skipAutoInstall, setSkipAutoInstall] = useState(false);
 
+  useEffect(() => {
+    // Check if user clicked "skip" button before, stored in sessionStorage
+    const skipped = sessionStorage.getItem("skipAppSheetInstall");
+    if (skipped) {
+      setSkipAutoInstall(true);
+    }
+  }, []);
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") handleInstallApp();
+    else if (action === "appsheet") {
+      // Skip auto-install prompt next time
+      sessionStorage.setItem("skipAppSheetInstall", "true");
+      window.open(
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
   }
-
-  const handleInstallApp = () => {
-    setInstalling(true);
-    // Mở AppSheet URL - AppSheet sẽ hiển thị install prompt của chính nó
-    window.open(APPSHEET_URL, "_blank", "noopener,noreferrer");
-    setTimeout(() => setInstalling(false), 800);
-  };
 
   return (
     <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
+      {/* AppSheet Auto-Installer - runs automatically unless skipped */}
+      {!skipAutoInstall && <AppSheetInstaller autoInstall={true} showUI={true} />}
+
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
         <div className="flex flex-col items-center gap-3 text-center page-fade">
           <div className="flex items-center gap-3">
@@ -97,7 +112,7 @@ export default function HomePage() {
               className="h-12 w-12 shrink-0 object-contain"
             />
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#1E40AF]">
-              VNAH QLNKT PUBLIC
+              VNAH QLDL CTV
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
@@ -136,17 +151,6 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
-
-              {feat.action === "appsheet" ? (
-                <button
-                  type="button"
-                  onClick={handleInstallApp}
-                  disabled={installing}
-                  className="mt-3 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#667eea] to-[#764ba2] px-4 py-[14px] text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {installing ? "Đang xử lý..." : "Cài đặt ứng dụng"}
-                </button>
-              ) : null}
             </div>
           ))}
         </div>

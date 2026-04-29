@@ -5,8 +5,6 @@ param(
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $ensureScriptPath = Join-Path $repoRoot $EnsureScriptRelativePath
-$icoPath = Join-Path $repoRoot "public\logo.ico"
-$pngPath = Join-Path $repoRoot "public\logo.png"
 
 if (-not (Test-Path -LiteralPath $ensureScriptPath)) {
   Write-Error "Missing ensure script: $ensureScriptPath"
@@ -21,17 +19,7 @@ Set-ItemProperty -Path $baseKey -Name "(Default)" -Value "URL:VNAH Shortcut Inst
 Set-ItemProperty -Path $baseKey -Name "URL Protocol" -Value "" -Force
 
 New-Item -Path "$baseKey\DefaultIcon" -Force | Out-Null
-# Use the logo.ico if it exists, fallback to PNG, then system icon
-if (Test-Path -LiteralPath $icoPath) {
-  Set-ItemProperty -Path "$baseKey\DefaultIcon" -Name "(Default)" -Value $icoPath -Force
-  Write-Output "Using ICO icon"
-} elseif (Test-Path -LiteralPath $pngPath) {
-  Set-ItemProperty -Path "$baseKey\DefaultIcon" -Name "(Default)" -Value $pngPath -Force
-  Write-Output "Using PNG icon (fallback)"
-} else {
-  Set-ItemProperty -Path "$baseKey\DefaultIcon" -Name "(Default)" -Value "%SystemRoot%\System32\SHELL32.dll,220" -Force
-  Write-Output "Using system icon (fallback)"
-}
+Set-ItemProperty -Path "$baseKey\DefaultIcon" -Name "(Default)" -Value "%SystemRoot%\System32\SHELL32.dll,220" -Force
 
 New-Item -Path $commandKey -Force | Out-Null
 $cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensureScriptPath`""
