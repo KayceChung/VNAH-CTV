@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -77,11 +76,20 @@ export default function HomePage() {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
     else if (action === "appsheet")
-      window.location.href =
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
-    else if (action === "install")
-      window.location.href =
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank";
+      window.open(
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    else if (action === "install") {
+      // Download and run PowerShell installation script
+      const link = document.createElement("a");
+      link.href = "/vnah-install.ps1";
+      link.download = "vnah-install.ps1";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   }
 
   return (
@@ -136,8 +144,6 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
-
-              {feat.action === "appsheet" && <PWAInstaller />}
             </div>
           ))}
         </div>
