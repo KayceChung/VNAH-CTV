@@ -38,13 +38,13 @@ const features = [
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
     badge: "Ứng dụng",
-    title: "Cài đặt và sử dụng ứng dụng",
+    title: "Cài đặt và truy cập ứng dụng",
     description:
-      "Tải xuống và cài đặt ứng dụng VNAH trên máy tính của bạn",
+      "Cài đặt ứng dụng VNAH trên máy tính của bạn - icon sẽ tự động xuất hiện trên màn hình chính",
     btnLabel: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
-    action: "install",
+    action: "appsheet",
   },
   {
     icon: (
@@ -75,14 +75,13 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "install") {
-      // Download PowerShell installation script
-      const link = document.createElement("a");
-      link.href = "/vnah-install.ps1";
-      link.download = "vnah-install.ps1";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    else if (action === "appsheet") {
+      // Open AppSheet URL in new tab - AppSheet handles app installation
+      window.open(
+        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
+        "_blank",
+        "noopener,noreferrer"
+      );
     }
   }
 
