@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -34,39 +33,18 @@ const features = [
         <path d="M14 14h1.5M14 17.5h4M17.5 14v4" />
       </svg>
     ),
-    accentColor: "text-orange-700",
-    accentBg: "bg-orange-100",
-    borderHover: "hover:border-orange-300",
-    badgeColor: "bg-orange-50 text-orange-700",
-    badge: "Truy cập",
-    title: "Truy cập ứng dụng",
-    description:
-      "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
-    btnLabel: "Truy cập",
-    btnClass:
-      "bg-orange-600 text-white hover:bg-orange-700",
-    action: "appsheet",
-  },
-  {
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        <path d="M9 10h.01M13 10h.01M12 14h.01" />
-      </svg>
-    ),
     accentColor: "text-red-700",
     accentBg: "bg-red-100",
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
-    badge: "Cài đặt",
-    title: "Cài đặt ứng dụng",
+    badge: "Ứng dụng",
+    title: "Truy cập và cài đặt ứng dụng",
     description:
-      "Cài đặt ứng dụng VNAH trên màn hình chính của bạn",
+      "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
     btnLabel: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
-    action: "install",
-    showPWA: true,
+    action: "appsheet",
   },
   {
     icon: (
@@ -97,12 +75,14 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet")
+    else if (action === "appsheet") {
+      // Open AppSheet URL in new tab - PWA will be available in browser
       window.open(
         "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
         "_blank",
         "noopener,noreferrer"
       );
+    }
   }
 
   return (
@@ -157,8 +137,6 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
-
-              {feat.showPWA && <PWAInstaller />}
             </div>
           ))}
         </div>
