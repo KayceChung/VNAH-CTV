@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ToastViewport } from "@/components/Toast";
 
 const features = [
   {
@@ -46,6 +48,7 @@ const features = [
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
+    action2: "appsheet-install",
     hasTwoButtons: true,
   },
   {
@@ -73,17 +76,34 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
+  const [toasts, setToasts] = useState<Array<{ id: string; message: string; tone: "success" | "error" | "info" }>>([]);
+
+  const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts((prev) => [...prev, { id, message, tone }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 6000);
+  };
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") {
-      // Open AppSheet URL - AppSheet will show its own PWA install prompt
+    else if (action === "appsheet" || action === "appsheet-install") {
+      // Open AppSheet URL
       window.open(
         "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
         "_blank",
         "noopener,noreferrer"
       );
+      
+      // Show installation instruction toast only for install button
+      if (action === "appsheet-install") {
+        showToast(
+          "💡 Cửa sổ AppSheet đã mở. Nhìn vào thanh địa chỉ - tìm biểu tượng '+' hoặc 'Cài đặt' để thêm ứng dụng vào màn hình chính của bạn.",
+          "info"
+        );
+      }
     }
   }
 
@@ -143,7 +163,7 @@ export default function HomePage() {
               {feat.hasTwoButtons && (
                 <button
                   type="button"
-                  onClick={() => handleAction(feat.action)}
+                  onClick={() => handleAction(feat.action2 || feat.action)}
                   className={`mt-3 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition hover:shadow-lg ${feat.btnClass}`}
                 >
                   {feat.btnLabel2}
@@ -153,6 +173,7 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+      <ToastViewport toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
     </main>
   );
 }
