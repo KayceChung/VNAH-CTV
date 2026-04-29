@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ToastViewport } from "@/components/Toast";
+import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -44,12 +45,9 @@ const features = [
     description:
       "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
     btnLabel: "Truy cập",
-    btnLabel2: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
-    action2: "appsheet-install",
-    hasTwoButtons: true,
   },
   {
     icon: (
@@ -77,20 +75,6 @@ const features = [
 export default function HomePage() {
   const router = useRouter();
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; tone: "success" | "error" | "info" }>>([]);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      console.log("✅ beforeinstallprompt event fired!", e);
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    console.log("📱 Listener for beforeinstallprompt set up");
-    
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-  }, []);
 
   const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -157,34 +141,6 @@ export default function HomePage() {
         "noopener,noreferrer"
       );
     }
-    else if (action === "appsheet-install") {
-      console.log("🔽 Install button clicked. deferredPrompt:", deferredPrompt);
-      if (deferredPrompt) {
-        // Trigger PWA installation prompt
-        console.log("💾 Triggering PWA prompt...");
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult: any) => {
-          if (choiceResult.outcome === "accepted") {
-            showToast("✅ Ứng dụng được cài đặt thành công!", "success");
-          } else {
-            showToast("⏭️ Cài đặt ứng dụng được hủy bỏ.", "info");
-          }
-        });
-        setDeferredPrompt(null);
-      } else {
-        // Fallback: Open AppSheet with instructions
-        console.log("⚠️ deferredPrompt is null, using fallback");
-        window.open(
-          "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
-          "_blank",
-          "noopener,noreferrer"
-        );
-        showToast(
-          "💡 PWA chưa khả dụng. Vui lòng sử dụng menu trình duyệt (⋮) → 'Cài đặt ứng dụng'",
-          "info"
-        );
-      }
-    }
   }
 
   return (
@@ -240,15 +196,7 @@ export default function HomePage() {
                 {feat.btnLabel}
               </button>
 
-              {feat.hasTwoButtons && (
-                <button
-                  type="button"
-                  onClick={() => handleAction(feat.action2 || feat.action)}
-                  className={`mt-3 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition hover:shadow-lg ${feat.btnClass}`}
-                >
-                  {feat.btnLabel2}
-                </button>
-              )}
+              {feat.action === "appsheet" && <PWAInstaller />}
             </div>
           ))}
         </div>
