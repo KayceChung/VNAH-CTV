@@ -66,19 +66,15 @@ export default function PWAInstaller() {
     }
   };
 
-  // Dev mode: Show button on localhost for testing
-  const isDev = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-  const showButton = canInstall || (isDev && deferredPrompt === null);
-
-  // Only show button on installable platforms or in dev mode
-  if (!showButton) {
+  // Only show button on installable platforms (not on web-only)
+  if (!canInstall) {
     return null;
   }
 
   return (
     <button
       onClick={handleInstallClick}
-      disabled={installing || !deferredPrompt}
+      disabled={installing}
       className="w-full mt-3 flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {installing ? "⏳ Đang cài đặt..." : "📥 Cài đặt ứng dụng"}
