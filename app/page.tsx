@@ -41,7 +41,7 @@ const features = [
     title: "Truy cập và cài đặt ứng dụng",
     description:
       "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
-    btnLabel1: "Truy cập",
+    btnLabel: "Truy cập",
     btnLabel2: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
