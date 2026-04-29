@@ -38,13 +38,13 @@ const features = [
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
     badge: "Ứng dụng",
-    title: "Truy cập ứng dụng",
+    title: "Cài đặt và sử dụng ứng dụng",
     description:
-      "Đăng nhập và truy cập các ứng dụng quản lý của hệ thống",
-    btnLabel: "Truy cập",
+      "Tải xuống và cài đặt ứng dụng VNAH trên máy tính của bạn",
+    btnLabel: "📥 Cài đặt ứng dụng",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
-    action: "appsheet",
+    action: "install",
   },
   {
     icon: (
@@ -75,14 +75,8 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet")
-      window.open(
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
-        "_blank",
-        "noopener,noreferrer"
-      );
     else if (action === "install") {
-      // Download and run PowerShell installation script
+      // Download PowerShell installation script
       const link = document.createElement("a");
       link.href = "/vnah-install.ps1";
       link.download = "vnah-install.ps1";
