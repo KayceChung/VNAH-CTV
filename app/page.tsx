@@ -81,11 +81,14 @@ export default function HomePage() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log("✅ beforeinstallprompt event fired!", e);
       e.preventDefault();
       setDeferredPrompt(e);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    console.log("📱 Listener for beforeinstallprompt set up");
+    
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
 
@@ -155,8 +158,10 @@ export default function HomePage() {
       );
     }
     else if (action === "appsheet-install") {
+      console.log("🔽 Install button clicked. deferredPrompt:", deferredPrompt);
       if (deferredPrompt) {
         // Trigger PWA installation prompt
+        console.log("💾 Triggering PWA prompt...");
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult: any) => {
           if (choiceResult.outcome === "accepted") {
@@ -168,6 +173,7 @@ export default function HomePage() {
         setDeferredPrompt(null);
       } else {
         // Fallback: Open AppSheet with instructions
+        console.log("⚠️ deferredPrompt is null, using fallback");
         window.open(
           "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
           "_blank",
