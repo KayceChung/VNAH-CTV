@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -18,11 +18,11 @@ const features = [
     accentBg: "bg-blue-100",
     borderHover: "hover:border-blue-300",
     badgeColor: "bg-blue-50 text-[#1E40AF]",
-    badge: "Tài khoản",
-    title: "Kiểm tra & thay đổi thông tin tài khoản",
+    badge: "TÃ i khoáº£n",
+    title: "Kiá»ƒm tra & thay Ä‘á»•i thÃ´ng tin tÃ i khoáº£n",
     description:
-      "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
-    btnLabel: "Truy cập",
+      "Cáº­p nháº­t vÃ  quáº£n lÃ½ thÃ´ng tin cÃ¡ nhÃ¢n, máº­t kháº©u vÃ  cÃ¡c cÃ i Ä‘áº·t tÃ i khoáº£n",
+    btnLabel: "Truy cáº­p",
     btnClass:
       "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
     action: "verify",
@@ -40,11 +40,11 @@ const features = [
     accentBg: "bg-red-100",
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
-    badge: "Ứng dụng",
-    title: "Truy cập và cài đặt ứng dụng",
+    badge: "á»¨ng dá»¥ng",
+    title: "Truy cáº­p vÃ  cÃ i Ä‘áº·t á»©ng dá»¥ng",
     description:
-      "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
-    btnLabel: "Truy cập",
+      "Truy cáº­p á»©ng dá»¥ng hoáº·c cÃ i Ä‘áº·t trÃªn mÃ n hÃ¬nh chÃ­nh cá»§a báº¡n",
+    btnLabel: "Truy cáº­p",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
@@ -62,10 +62,10 @@ const features = [
     accentBg: "bg-green-100",
     borderHover: "hover:border-green-300",
     badgeColor: "bg-green-50 text-green-700",
-    badge: "Đăng ký",
-    title: "Đăng ký tài khoản",
-    description: "Tạo tài khoản mới để tham gia hệ thống",
-    btnLabel: "Đăng ký",
+    badge: "ÄÄƒng kÃ½",
+    title: "ÄÄƒng kÃ½ tÃ i khoáº£n",
+    description: "Táº¡o tÃ i khoáº£n má»›i Ä‘á»ƒ tham gia há»‡ thá»‘ng",
+    btnLabel: "ÄÄƒng kÃ½",
     btnClass:
       "bg-green-600 text-white hover:bg-green-700",
     action: "register",
@@ -80,7 +80,7 @@ export default function HomePage() {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, tone }]);
     // Longer duration for installation instructions (10 seconds)
-    const duration = tone === "info" && message.includes("HƯỚNG DẪN") ? 10000 : 6000;
+    const duration = tone === "info" && message.includes("HÆ¯á»šNG DáºªN") ? 10000 : 6000;
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, duration);
@@ -88,7 +88,7 @@ export default function HomePage() {
 
   const createDesktopShortcut = async () => {
     try {
-      showToast("� Đang tải file cài đặt...", "info");
+      showToast("ï¿½ Äang táº£i file cÃ i Ä‘áº·t...", "info");
 
       const response = await fetch("/api/create-shortcut", {
         method: "POST",
@@ -113,18 +113,18 @@ export default function HomePage() {
         document.body.removeChild(a);
 
         showToast(
-          "✅ File đã được tải xuống! Hãy mở file 'create-appsheet-shortcut.bat' để tạo shortcut trên Desktop.",
+          "âœ… File Ä‘Ã£ Ä‘Æ°á»£c táº£i xuá»‘ng! HÃ£y má»Ÿ file 'create-appsheet-shortcut.bat' Ä‘á»ƒ táº¡o shortcut trÃªn Desktop.",
           "success"
         );
       } else {
         showToast(
-          "❌ Lỗi: Không thể tải file. Hãy thử lại.",
+          "âŒ Lá»—i: KhÃ´ng thá»ƒ táº£i file. HÃ£y thá»­ láº¡i.",
           "error"
         );
       }
     } catch (error) {
       showToast(
-        `❌ Lỗi: ${error instanceof Error ? error.message : "Không biết"}`,
+        `âŒ Lá»—i: ${error instanceof Error ? error.message : "KhÃ´ng biáº¿t"}`,
         "error"
       );
     }
@@ -133,14 +133,7 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") {
-      // Open AppSheet URL
-      window.open(
-        "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
-        "_blank",
-        "noopener,noreferrer"
-      );
-    }
+    else if (action === "appsheet") router.push("/app");
   }
 
   return (
@@ -160,10 +153,10 @@ export default function HomePage() {
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
-            Hệ thống quản lý cộng tác viên
+            Há»‡ thá»‘ng quáº£n lÃ½ cá»™ng tÃ¡c viÃªn
           </h1>
           <p className="max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
-            Chọn chức năng bạn cần bên dưới để bắt đầu.
+            Chá»n chá»©c nÄƒng báº¡n cáº§n bÃªn dÆ°á»›i Ä‘á»ƒ báº¯t Ä‘áº§u.
           </p>
         </div>
 
