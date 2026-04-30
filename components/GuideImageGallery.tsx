@@ -33,6 +33,26 @@ export function GuideImageGallery({
     }
   }, [deviceType]);
 
+  // Auto-switch tabs based on screen size when deviceType is "both"
+  useEffect(() => {
+    if (deviceType !== "both" || !isHydrated) return;
+
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setActiveTab("mobile");
+      } else {
+        setActiveTab("desktop");
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [deviceType, isHydrated]);
+
   // Default desktop images
   const desktopImages: GuideImage[] = images || [
     {
@@ -142,7 +162,7 @@ export function GuideImageGallery({
         {isHydrated && (
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
-              {deviceType === "mobile" ? "📱 Hướng dẫn sử dụng trên điện thoại" : deviceType === "desktop" ? "💻 Hướng dẫn sử dụng trên Desktop" : "📱 Hướng dẫn sử dụng"}
+              {deviceType === "mobile" ? "📱 Hướng dẫn sử dụng trên điện thoại" : deviceType === "desktop" ? "💻 Hướng dẫn sử dụng trên Desktop" : activeTab === "mobile" ? "📱 Hướng dẫn sử dụng trên điện thoại" : "💻 Hướng dẫn sử dụng trên Desktop"}
             </h2>
             <p className="text-slate-600">
               {deviceType === "both" ? "Chọn loại thiết bị để xem hướng dẫn chi tiết" : `${deviceType === "mobile" ? "Hướng dẫn chi tiết cài đặt trên điện thoại" : "Hướng dẫn chi tiết cài đặt trên Desktop"}`}

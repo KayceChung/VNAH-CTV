@@ -20,11 +20,11 @@ const features = [
     accentBg: "bg-blue-100",
     borderHover: "hover:border-blue-300",
     badgeColor: "bg-blue-50 text-[#1E40AF]",
-    badge: "Tai khoan",
-    title: "Kiem tra va thay doi thong tin tai khoan",
+    badge: "Tài Khoản",
+    title: "Kiểm tra và thay đổi thông tin tài khoản",
     description:
-      "Cap nhat va quan ly thong tin ca nhan, mat khau va cac cai dat tai khoan",
-    btnLabel: "Truy cap",
+      "Cập nhật và quản lý thông tin cá nhân, mật khẩu và các cài đặt tài khoản",
+    btnLabel: "Truy cập",
     btnClass:
       "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
     action: "verify",
@@ -42,11 +42,11 @@ const features = [
     accentBg: "bg-red-100",
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
-    badge: "Ung dung",
-    title: "Truy cap va cai dat ung dung",
+    badge: "Ứng dụng",
+    title: "Truy cập và cài đặt ứng dụng",
     description:
-      "Truy cap ung dung hoac cai dat tren man hinh chinh cua ban",
-    btnLabel: "Truy cap",
+      "Truy cập ứng dụng hoặc cài đặt trên màn hình chính của bạn",
+    btnLabel: "Truy cập",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
@@ -64,10 +64,10 @@ const features = [
     accentBg: "bg-green-100",
     borderHover: "hover:border-green-300",
     badgeColor: "bg-green-50 text-green-700",
-    badge: "Dang ky",
-    title: "Dang ky tai khoan",
-    description: "Tao tai khoan moi de tham gia he thong",
-    btnLabel: "Dang ky",
+    badge: "Đăng ký",
+    title: "Đăng ký tài khoản",
+    description: "Tạo tài khoản mới để tham gia hệ thống",
+    btnLabel: "Đăng ký",
     btnClass:
       "bg-green-600 text-white hover:bg-green-700",
     action: "register",
@@ -90,7 +90,7 @@ export default function HomePage() {
 
   const createDesktopShortcut = async () => {
     try {
-      showToast("Dang tai file cai dat...", "info");
+showToast("Đang tải file cài đặt...", "info");
 
       const response = await fetch("/api/create-shortcut", {
         method: "POST",
@@ -115,18 +115,18 @@ export default function HomePage() {
         document.body.removeChild(a);
 
         showToast(
-          "File da duoc tai xuong! Hay mo file 'create-appsheet-shortcut.bat' de tao shortcut tren Desktop.",
+          "File đã được tải xuống! Hãy mở file 'create-appsheet-shortcut.bat' để tạo shortcut trên Desktop.",
           "success"
         );
       } else {
         showToast(
-          "Loi: Khong the tai file. Hay thu lai.",
+          "Lỗi: Không thể tải file. Hãy thử lại.",
           "error"
         );
       }
     } catch (error) {
       showToast(
-        `Loi: ${error instanceof Error ? error.message : "Khong biet"}`,
+        `Lỗi: ${error instanceof Error ? error.message : "Không biết"}`,
         "error"
       );
     }
@@ -154,7 +154,7 @@ export default function HomePage() {
           <button
             onClick={() => setIsInstallDialogOpen(true)}
             className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-            title="Cai dat ung dung"
+            title="Cài đặt ứng dụng"
           >
             Download
           </button>
@@ -177,10 +177,10 @@ export default function HomePage() {
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
-            He thong quan ly cong tac vien
+            Hệ thống quản lý công tác viên
           </h1>
           <p className="max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
-            Chon chuc nang ban can ben duoi de bat dau.
+            Chọn chức năng bạn cần bên dưới để bắt đầu.
           </p>
         </div>
 
@@ -217,13 +217,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Guide Section */}
-      <GuideImageGallery deviceType="desktop" />
-      
-      {/* Mobile Phone Guide Section */}
-      <div className="mt-12 pt-8 border-t border-slate-200">
-        <GuideImageGallery deviceType="mobile" />
-      </div>
+      {/* Guide Section - Auto-switches between Desktop/Mobile tabs based on screen size */}
+      <GuideImageGallery deviceType="both" />
       
       {/* App Install Dialog */}
       <AppInstallDialog

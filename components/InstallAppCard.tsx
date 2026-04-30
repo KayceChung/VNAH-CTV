@@ -34,15 +34,15 @@ function detectDeviceType(): DeviceType {
 function getAutoHint(device: DeviceType, hasPrompt: boolean): string {
   if (device === "android") {
     return hasPrompt
-      ? "Android: Trinh duyet co ho tro cai dat, nhung nut nay chi hien huong dan de tranh tao shortcut tu dong."
-      : "Android: Trinh duyet chua ho tro install prompt. Vui long mo menu trinh duyet va chon Add to Home screen.";
+      ? "Android: Trình duyệt có hỗ trợ cài đặt, nhưng nút này chỉ hiển hướng dẫn để tránh tạo shortcut tự động."
+      : "Android: Trình duyệt chưa hỗ trợ install prompt. Vui lòng mở menu trình duyệt và chọn Add to Home screen.";
   }
 
   if (device === "iphone") {
-    return "iPhone: Nhan nut Share (o thanh duoi), chon 'Add to Home Screen', sau do bam Add.";
+    return "iPhone: Nhấn nút Share (ở thanh dưới), chọn 'Add to Home Screen', sau đó bấm Add.";
   }
 
-  return "May tinh: Nhan bieu tuong sao (bookmark) hoac menu trinh duyet de tao shortcut ra man hinh.";
+  return "Máy tính: Nhấn biểu tượng sao (bookmark) hoặc menu trình duyệt để tạo shortcut ra màn hình.";
 }
 
 export function InstallAppCard() {
@@ -51,7 +51,7 @@ export function InstallAppCard() {
   const [isInstalling, setIsInstalling] = useState(false);
   const [hasBrowserInstall, setHasBrowserInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [message, setMessage] = useState("Dang xac dinh thiet bi...");
+  const [message, setMessage] = useState("Đang xác định thiết bị...");
 
   useEffect(() => {
     const currentDevice = detectDeviceType();
@@ -65,7 +65,7 @@ export function InstallAppCard() {
 
     if (installed) {
       setIsInstalled(true);
-      setMessage("Ung dung da duoc cai dat tren thiet bi nay.");
+      setMessage("Ứng dụng đã được cài đặt trên thiết bị này.");
       return;
     }
 
@@ -85,7 +85,7 @@ export function InstallAppCard() {
       setIsInstalled(true);
       setHasBrowserInstall(false);
       setDeferredPrompt(null);
-      setMessage("Ung dung da duoc cai dat thanh cong.");
+      setMessage("Ứng dụng đã được cài đặt thành công.");
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -111,10 +111,10 @@ export function InstallAppCard() {
     }
 
     if (isInstalling) {
-      return "Dang xu ly...";
+      return "Đang xử lý...";
     }
 
-    return "Cai dat ung dung";
+    return "Cài đặt ứng dụng";
   }, [isInstalled, isInstalling]);
 
   const handleInstall = async () => {
@@ -126,7 +126,7 @@ export function InstallAppCard() {
 
     try {
       if (device === "iphone") {
-        setMessage("Huong dan iPhone: Mo Share -> Add to Home Screen -> Add.");
+        setMessage("Hướng dẫn iPhone: Mở Share -> Add to Home Screen -> Add.");
         return;
       }
 
@@ -136,9 +136,9 @@ export function InstallAppCard() {
           const choice = await deferredPrompt.userChoice;
 
           if (choice.outcome === "accepted") {
-            setMessage("Android: Ban da chap nhan cai dat trong install prompt.");
+            setMessage("Android: Bạn đã chấp nhận cài đặt trong install prompt.");
           } else {
-            setMessage("Android: Ban da dong install prompt. Ban co the thu lai bat ky luc nao.");
+            setMessage("Android: Bạn đã đóng install prompt. Bạn có thể thử lại bất kỳ lúc nào.");
           }
 
           setDeferredPrompt(null);
@@ -147,16 +147,16 @@ export function InstallAppCard() {
 
         setMessage(
           hasBrowserInstall
-            ? "Android: De tu cai dat thu cong, mo menu trinh duyet va chon Install app/Add to Home screen."
-            : "Android: Vui long mo menu trinh duyet va chon Add to Home screen de tao shortcut thu cong.",
+            ? "Android: Để tự cài đặt thủ công, mở menu trình duyệt và chọn Install app/Add to Home screen."
+            : "Android: Vui lòng mở menu trình duyệt và chọn Add to Home screen để tạo shortcut thủ công.",
         );
         return;
       }
 
       if (device === "desktop") {
-        setMessage("Huong dan desktop: Mo menu trinh duyet va tao bookmark/shortcut thu cong.");
+        setMessage("Hướng dẫn desktop: Mở menu trình duyệt và tạo bookmark/shortcut thủ công.");
       } else {
-        setMessage("Trinh duyet khong ho tro install prompt. Vui long tao shortcut thu cong tu menu trinh duyet.");
+        setMessage("Trình duyệt không hỗ trợ install prompt. Vui lòng tạo shortcut thủ công từ menu trình duyệt.");
       }
     } finally {
       setIsInstalling(false);
@@ -165,7 +165,7 @@ export function InstallAppCard() {
 
   return (
     <div className="mt-5 rounded-3xl border border-cyan-200/70 bg-gradient-to-br from-cyan-50 via-white to-indigo-50 p-4 shadow-[0_10px_30px_rgba(14,116,144,0.16)]">
-      <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-700">Cai dat ung dung</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-700">Cài đặt ứng dụng</p>
       <button
         type="button"
         disabled={isInstalled || isInstalling}
