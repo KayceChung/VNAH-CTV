@@ -135,7 +135,9 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
-    else if (action === "appsheet") router.push("/app");
+    else if (action === "appsheet") {
+      window.open("https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce", "_blank");
+    }
   }
 
   const handleInstallConfirm = (appName: string) => {
