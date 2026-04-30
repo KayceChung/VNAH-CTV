@@ -220,6 +220,11 @@ export default function HomePage() {
       {/* Guide Section */}
       <GuideImageGallery deviceType="desktop" />
       
+      {/* Mobile Phone Guide Section */}
+      <div className="mt-12 pt-8 border-t border-slate-200">
+        <GuideImageGallery deviceType="mobile" />
+      </div>
+      
       {/* App Install Dialog */}
       <AppInstallDialog
         isOpen={isInstallDialogOpen}

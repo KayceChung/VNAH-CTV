@@ -26,6 +26,10 @@ export function GuideImageGallery({
     setIsHydrated(true);
   }, []);
 
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   // Default desktop images
   const desktopImages: GuideImage[] = images || [
     {
@@ -57,29 +61,59 @@ export function GuideImageGallery({
 
   const mobileImages: GuideImage[] = [
     {
-      src: "/images/guide-mobile1.png",
+      src: "/images/guide-mobile1.jpg",
       alt: "Hướng dẫn Mobile - Bước 1",
-      title: "Bước 1: Truy cập trên điện thoại",
+      title: "Bước 1: Cài đặt ứng dụng",
     },
     {
-      src: "/images/guide-mobile2.png",
+      src: "/images/guide-mobile2.jpg",
       alt: "Hướng dẫn Mobile - Bước 2",
-      title: "Bước 2: Đăng nhập",
+      title: "Bước 2: Mở ứng dụng",
     },
     {
-      src: "/images/guide-mobile3.png",
+      src: "/images/guide-mobile3.jpg",
       alt: "Hướng dẫn Mobile - Bước 3",
-      title: "Bước 3: Chọn chức năng",
+      title: "Bước 3: Đăng nhập tài khoản",
     },
     {
-      src: "/images/guide-mobile4.png",
+      src: "/images/guide-mobile4.jpg",
       alt: "Hướng dẫn Mobile - Bước 4",
-      title: "Bước 4: Hoàn tất",
+      title: "Bước 4: Xác nhận thông tin",
     },
     {
-      src: "/images/guide-mobile5.png",
+      src: "/images/guide-mobile5.jpg",
       alt: "Hướng dẫn Mobile - Bước 5",
-      title: "Bước 5: Xem kết quả",
+      title: "Bước 5: Chọn chức năng",
+    },
+    {
+      src: "/images/guide-mobile6.jpg",
+      alt: "Hướng dẫn Mobile - Bước 6",
+      title: "Bước 6: Xem chi tiết",
+    },
+    {
+      src: "/images/guide-mobile7.jpg",
+      alt: "Hướng dẫn Mobile - Bước 7",
+      title: "Bước 7: Cập nhật thông tin",
+    },
+    {
+      src: "/images/guide-mobile8.jpg",
+      alt: "Hướng dẫn Mobile - Bước 8",
+      title: "Bước 8: Lưu thay đổi",
+    },
+    {
+      src: "/images/guide-mobile9.jpg",
+      alt: "Hướng dẫn Mobile - Bước 9",
+      title: "Bước 9: Xác nhận lưu",
+    },
+    {
+      src: "/images/guide-mobile10.jpg",
+      alt: "Hướng dẫn Mobile - Bước 10",
+      title: "Bước 10: Hoàn tất",
+    },
+    {
+      src: "/images/guide-mobile11.jpg",
+      alt: "Hướng dẫn Mobile - Bước 11",
+      title: "Bước 11: Xem kết quả",
     },
   ];
 
