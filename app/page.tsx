@@ -1,8 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ToastViewport } from "@/components/Toast";
+import { AppInstallDialog } from "@/components/AppInstallDialog";
+import { AppMenu } from "@/components/AppMenu";
+import { GuideImageGallery } from "@/components/GuideImageGallery";
 
 const features = [
   {
@@ -17,11 +20,11 @@ const features = [
     accentBg: "bg-blue-100",
     borderHover: "hover:border-blue-300",
     badgeColor: "bg-blue-50 text-[#1E40AF]",
-    badge: "TÃ i khoáº£n",
-    title: "Kiá»ƒm tra & thay Ä‘á»•i thÃ´ng tin tÃ i khoáº£n",
+    badge: "Tai khoan",
+    title: "Kiem tra va thay doi thong tin tai khoan",
     description:
-      "Cáº­p nháº­t vÃ  quáº£n lÃ½ thÃ´ng tin cÃ¡ nhÃ¢n, máº­t kháº©u vÃ  cÃ¡c cÃ i Ä‘áº·t tÃ i khoáº£n",
-    btnLabel: "Truy cáº­p",
+      "Cap nhat va quan ly thong tin ca nhan, mat khau va cac cai dat tai khoan",
+    btnLabel: "Truy cap",
     btnClass:
       "bg-[#1E40AF] text-white hover:bg-[#1D4ED8]",
     action: "verify",
@@ -39,11 +42,11 @@ const features = [
     accentBg: "bg-red-100",
     borderHover: "hover:border-red-300",
     badgeColor: "bg-red-50 text-red-700",
-    badge: "á»¨ng dá»¥ng",
-    title: "Truy cáº­p vÃ  cÃ i Ä‘áº·t á»©ng dá»¥ng",
+    badge: "Ung dung",
+    title: "Truy cap va cai dat ung dung",
     description:
-      "Truy cáº­p á»©ng dá»¥ng hoáº·c cÃ i Ä‘áº·t trÃªn mÃ n hÃ¬nh chÃ­nh cá»§a báº¡n",
-    btnLabel: "Truy cáº­p",
+      "Truy cap ung dung hoac cai dat tren man hinh chinh cua ban",
+    btnLabel: "Truy cap",
     btnClass:
       "bg-red-600 text-white hover:bg-red-700",
     action: "appsheet",
@@ -61,10 +64,10 @@ const features = [
     accentBg: "bg-green-100",
     borderHover: "hover:border-green-300",
     badgeColor: "bg-green-50 text-green-700",
-    badge: "ÄÄƒng kÃ½",
-    title: "ÄÄƒng kÃ½ tÃ i khoáº£n",
-    description: "Táº¡o tÃ i khoáº£n má»›i Ä‘á»ƒ tham gia há»‡ thá»‘ng",
-    btnLabel: "ÄÄƒng kÃ½",
+    badge: "Dang ky",
+    title: "Dang ky tai khoan",
+    description: "Tao tai khoan moi de tham gia he thong",
+    btnLabel: "Dang ky",
     btnClass:
       "bg-green-600 text-white hover:bg-green-700",
     action: "register",
@@ -74,12 +77,12 @@ const features = [
 export default function HomePage() {
   const router = useRouter();
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; tone: "success" | "error" | "info" }>>([]);
+  const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
 
   const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, tone }]);
-    // Longer duration for installation instructions (10 seconds)
-    const duration = tone === "info" && message.includes("HÆ¯á»šNG DáºªN") ? 10000 : 6000;
+    const duration = tone === "info" && message.includes("HUONG DAN") ? 10000 : 6000;
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, duration);
@@ -87,7 +90,7 @@ export default function HomePage() {
 
   const createDesktopShortcut = async () => {
     try {
-      showToast("ï¿½ Äang táº£i file cÃ i Ä‘áº·t...", "info");
+      showToast("Dang tai file cai dat...", "info");
 
       const response = await fetch("/api/create-shortcut", {
         method: "POST",
@@ -112,18 +115,18 @@ export default function HomePage() {
         document.body.removeChild(a);
 
         showToast(
-          "âœ… File Ä‘Ã£ Ä‘Æ°á»£c táº£i xuá»‘ng! HÃ£y má»Ÿ file 'create-appsheet-shortcut.bat' Ä‘á»ƒ táº¡o shortcut trÃªn Desktop.",
+          "File da duoc tai xuong! Hay mo file 'create-appsheet-shortcut.bat' de tao shortcut tren Desktop.",
           "success"
         );
       } else {
         showToast(
-          "âŒ Lá»—i: KhÃ´ng thá»ƒ táº£i file. HÃ£y thá»­ láº¡i.",
+          "Loi: Khong the tai file. Hay thu lai.",
           "error"
         );
       }
     } catch (error) {
       showToast(
-        `âŒ Lá»—i: ${error instanceof Error ? error.message : "KhÃ´ng biáº¿t"}`,
+        `Loi: ${error instanceof Error ? error.message : "Khong biet"}`,
         "error"
       );
     }
@@ -135,8 +138,28 @@ export default function HomePage() {
     else if (action === "appsheet") router.push("/app");
   }
 
+  const handleInstallConfirm = (appName: string) => {
+    showToast("App will be installed!", "success");
+    console.log("Install app:", appName);
+  };
+
   return (
     <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
+      {/* Header with Menu */}
+      <div className="mx-auto max-w-5xl flex justify-between items-start mb-8">
+        <div></div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsInstallDialogOpen(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+            title="Cai dat ung dung"
+          >
+            Download
+          </button>
+          <AppMenu />
+        </div>
+      </div>
+
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
         <div className="flex flex-col items-center gap-3 text-center page-fade">
           <div className="flex items-center gap-3">
@@ -152,10 +175,10 @@ export default function HomePage() {
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
-            Há»‡ thá»‘ng quáº£n lÃ½ cá»™ng tÃ¡c viÃªn
+            He thong quan ly cong tac vien
           </h1>
           <p className="max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
-            Chá»n chá»©c nÄƒng báº¡n cáº§n bÃªn dÆ°á»›i Ä‘á»ƒ báº¯t Ä‘áº§u.
+            Chon chuc nang ban can ben duoi de bat dau.
           </p>
         </div>
 
@@ -191,6 +214,19 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* Guide Section */}
+      <GuideImageGallery deviceType="desktop" />
+      
+      {/* App Install Dialog */}
+      <AppInstallDialog
+        isOpen={isInstallDialogOpen}
+        onClose={() => setIsInstallDialogOpen(false)}
+        appName="VNAH_QLNKT_VER3.0_PUBLIC"
+        appUrl="www.appsheet.com"
+        onConfirm={handleInstallConfirm}
+      />
+
       <ToastViewport toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
     </main>
   );

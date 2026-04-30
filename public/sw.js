@@ -49,7 +49,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && request.method === "GET") {
             const cache = caches.open(CACHE_NAME);
             cache.then((c) => c.put(request, response.clone()));
           }
@@ -73,7 +73,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         }
         return fetch(request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== "basic") {
+          if (!response || response.status !== 200 || response.type !== "basic" || request.method !== "GET") {
             return response;
           }
           const responseToCache = response.clone();
