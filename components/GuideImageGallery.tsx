@@ -58,22 +58,22 @@ export function GuideImageGallery({
     {
       src: "/images/guide-desktop1.png",
       alt: "Hướng dẫn Desktop - Bước 1",
-      title: "Bước 1: Truy cập trang chủ",
+      title: "Bước 1: Truy cập ứng dụng QLNKT - PUBLIC thông qua 'TRUY CẬP'",
     },
     {
       src: "/images/guide-desktop2.png",
       alt: "Hướng dẫn Desktop - Bước 2",
-      title: "Bước 2: Đăng nhập tài khoản",
+      title: "Bước 2: Vào mục cài đặt tại dấu 3 chấm ở góc trên bên phải",
     },
     {
       src: "/images/guide-desktop3.png",
       alt: "Hướng dẫn Desktop - Bước 3",
-      title: "Bước 3: Chọn chức năng",
+      title: "Bước 3: Chọn click mục 'Truyền, lưu và chia sẻ' sau đó chọn 'Cài đặt ứng dụng'",
     },
     {
       src: "/images/guide-desktop4.png",
       alt: "Hướng dẫn Desktop - Bước 4",
-      title: "Bước 4: Hoàn tất",
+      title: "Bước 4: Chọn 'Cài đặt' để thêm ứng dụng vào",
     },
     {
       src: "/images/guide-desktop5.png",
