@@ -5,12 +5,11 @@ import { ServiceWorkerRegistry } from "@/components/ServiceWorkerRegistry";
 
 export const metadata: Metadata = {
   title: "VNAH QLDL CTV",
-  description: "Há»‡ thá»‘ng xÃ¡c thá»±c danh tÃ­nh vÃ  quáº£n lÃ½ thÃ´ng tin nhÃ¢n sá»±",
+  description: "Hệ thống xác thực danh tính và quản lý thông tin nhân sự",
   manifest: "/manifest.json",
   metadataBase: new URL(
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
   ),
-
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
@@ -29,6 +28,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body>
         <AuthProvider>
           {children}
