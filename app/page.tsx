@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ToastViewport } from "@/components/Toast";
-import PWAInstaller from "@/components/PWAInstaller";
 
 const features = [
   {
@@ -188,8 +187,6 @@ export default function HomePage() {
               >
                 {feat.btnLabel}
               </button>
-
-              {feat.action === "appsheet" && <PWAInstaller />}
             </div>
           ))}
         </div>
