@@ -18,17 +18,20 @@ export function GuideImageGallery({
   images,
   deviceType = "both" 
 }: GuideImageGalleryProps) {
-  const [activeTab, setActiveTab] = useState<"desktop" | "mobile">("desktop");
+  const [activeTab, setActiveTab] = useState<"desktop" | "mobile">(
+    deviceType === "mobile" ? "mobile" : "desktop"
+  );
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+    // Reset to appropriate tab when deviceType changes
+    if (deviceType !== "both") {
+      setActiveTab(deviceType as "desktop" | "mobile");
+      setCurrentImageIndex(0);
+    }
+  }, [deviceType]);
 
   // Default desktop images
   const desktopImages: GuideImage[] = images || [
@@ -136,17 +139,19 @@ export function GuideImageGallery({
     <section className="w-full py-8 px-4 bg-gradient-to-b from-slate-50 to-white">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            📱 Hướng dẫn sử dụng
-          </h2>
-          <p className="text-slate-600">
-            Chọn loại thiết bị để xem hướng dẫn chi tiết
-          </p>
-        </div>
+        {isHydrated && (
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              {deviceType === "mobile" ? "📱 Hướng dẫn sử dụng trên điện thoại" : deviceType === "desktop" ? "💻 Hướng dẫn sử dụng trên Desktop" : "📱 Hướng dẫn sử dụng"}
+            </h2>
+            <p className="text-slate-600">
+              {deviceType === "both" ? "Chọn loại thiết bị để xem hướng dẫn chi tiết" : `${deviceType === "mobile" ? "Hướng dẫn chi tiết cài đặt trên điện thoại" : "Hướng dẫn chi tiết cài đặt trên Desktop"}`}
+            </p>
+          </div>
+        )}
 
         {/* Device Tabs */}
-        {deviceType === "both" && (
+        {deviceType === "both" && isHydrated && (
           <div className="flex gap-2 mb-6 justify-center">
             <button
               onClick={() => {
