@@ -47,7 +47,7 @@ export default function SignatureAndDocuments({
     ctx.lineWidth = 2;
   }, []);
 
-  // Handle canvas drawing
+  // Handle canvas drawing - Mouse Events
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
     const canvas = canvasRef.current;
@@ -85,6 +85,49 @@ export default function SignatureAndDocuments({
     setIsDrawing(false);
   };
 
+  // Handle canvas drawing - Touch Events (for mobile/tablet)
+  const startDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const drawTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    setIsDrawing(false);
+  };
+
   // Clear canvas
   const clearSignature = () => {
     const canvas = canvasRef.current;
@@ -103,6 +146,9 @@ export default function SignatureAndDocuments({
     if (!canvas) return;
 
     const base64Data = canvas.toDataURL('image/png');
+    console.log("Signature captured!");
+    console.log("Base64 length:", base64Data.length);
+    console.log("First 100 chars:", base64Data.substring(0, 100));
     onSignatureCaptured(base64Data);
   };
 
@@ -145,7 +191,11 @@ export default function SignatureAndDocuments({
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
-          className="w-full border-2 border-dashed border-gray-300 bg-white cursor-crosshair rounded mb-3"
+          onTouchStart={startDrawingTouch}
+          onTouchMove={drawTouch}
+          onTouchEnd={stopDrawingTouch}
+          onTouchCancel={stopDrawingTouch}
+          className="w-full border-2 border-dashed border-gray-300 bg-white cursor-crosshair rounded mb-3 touch-none"
           style={{ minHeight: '150px' }}
         />
 
@@ -175,7 +225,7 @@ export default function SignatureAndDocuments({
       <div className="border rounded-lg p-4 bg-gray-50">
         <h3 className="text-lg font-semibold mb-1 text-gray-900">📷 Ảnh chân dung (CCCD/CMND)</h3>
         <p className="text-xs text-blue-600 mb-3 font-medium">
-          💾 Lưu vào: Google Drive / VNAH_PortraitPhotos
+          💾 Lưu vào: Google Drive / VNAH_Avatars
         </p>
         <p className="text-sm text-gray-600 mb-3">Tải lên ảnh scan CCCD hoặc CMND (JPG, PNG, tối đa 5MB)</p>
 

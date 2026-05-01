@@ -28,7 +28,7 @@ interface RegisterFormData {
 }
 
 type FieldName = keyof RegisterFormData;
-type FieldErrors = Partial<Record<FieldName | 'passwordConfirm', string>>;
+type FieldErrors = Partial<Record<FieldName | 'passwordConfirm' | 'signature' | 'cccd_image', string>>;
 
 type ProvinceItem = {
   code: number;
@@ -375,6 +375,14 @@ export default function RegisterPage() {
       nextErrors.address_detail = 'Địa chỉ thường trú không được để trống';
     }
 
+    if (!signatureData || signatureData.trim() === '') {
+      nextErrors.signature = 'Vui lòng ký tên trước khi đăng ký';
+    }
+
+    if (!cccdImageData || cccdImageData.trim() === '') {
+      nextErrors.cccd_image = 'Vui lòng tải lên ảnh CCCD/CMND trước khi đăng ký';
+    }
+
     return nextErrors;
   };
 
@@ -421,6 +429,12 @@ export default function RegisterPage() {
     const wardName = getNameByCode(wards, form.ward);
 
     try {
+      console.log("=== REGISTRATION SUBMISSION ===");
+      console.log("signatureData length:", signatureData?.length || "empty/null");
+      console.log("cccdImageData length:", cccdImageData?.length || "empty/null");
+      console.log("signatureData first 100 chars:", signatureData?.substring(0, 100));
+      console.log("cccdImageData first 100 chars:", cccdImageData?.substring(0, 100));
+
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -876,8 +890,8 @@ export default function RegisterPage() {
               onSignatureCaptured={setSignatureData}
               onCCCDImageCaptured={setCCCDImageData}
               errors={{
-                signature: undefined,
-                cccd_image: undefined,
+                signature: errors.signature,
+                cccd_image: errors.cccd_image,
               }}
             />
 

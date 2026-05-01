@@ -25,6 +25,7 @@ const COLUMNS = {
   Relation_ship: "Relation_ship",
   Signature_Staff: "Signature_Staff",
   Scan_CCCD: "Scan CCCD",
+  ID_Card_Pic: "ID Card Pic",
 };
 
 function doPost(e) {
@@ -137,6 +138,19 @@ function registerEmployee(data) {
   const branch = String(data.branch || "TT_8").trim();
   const branch_code = String(data.branch_code || "TT_8").trim();
 
+  // ===== DEBUG: Log incoming data =====
+  Logger.log("===== registerEmployee() CALLED =====");
+  Logger.log("Incoming data keys: " + Object.keys(data).join(", "));
+  Logger.log("id_employees: " + id_employees);
+  Logger.log("has signature_data? " + !!data.signature_data);
+  Logger.log("has cccd_image_data? " + !!data.cccd_image_data);
+  if (data.signature_data) {
+    Logger.log("signature_data type: " + typeof data.signature_data);
+    Logger.log("signature_data length: " + (data.signature_data ? data.signature_data.length : "N/A"));
+    Logger.log("signature_data first 100 chars: " + String(data.signature_data).substring(0, 100));
+  }
+  // ===== END DEBUG =====
+
   // Validate all required fields
   if (!id_employees || !password || !name || !dob || !sex || !address || !phone || !email || !working_at || !ward) {
     return respond({
@@ -196,6 +210,8 @@ function registerEmployee(data) {
   const countIndex = headers.indexOf(COLUMNS.COUNT);
   const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
   const relationshipIndex = headers.indexOf(COLUMNS.Relation_ship);
+  const signatureStaffIndex = headers.indexOf(COLUMNS.Signature_Staff);
+  const idCardPicIndex = headers.indexOf(COLUMNS.ID_Card_Pic);
 
   // Debug logging for column indices
   Logger.log("Column Indices Debug:");
@@ -206,6 +222,8 @@ function registerEmployee(data) {
   Logger.log("Branch: " + branchIndex + " (expected col W)");
   Logger.log("Branch_CODE: " + branchCodeIndex + " (expected col X)");
   Logger.log("Title: " + titleIndex + " (expected col AI)");
+  Logger.log("Signature_Staff: " + signatureStaffIndex);
+  Logger.log("ID_Card_Pic: " + idCardPicIndex);
 
   // Validate all required columns exist
   if (idNumberIndex === -1 || idEmployeesIndex === -1 || passwordIndex === -1 || nameIndex === -1) {
@@ -248,38 +266,74 @@ function registerEmployee(data) {
   if (updateAtIndex !== -1) newRowData[updateAtIndex] = now;
 
   // Handle signature file upload
-  if (data.signature_data) {
+  Logger.log("DEBUG: signature_data present? " + (!!data.signature_data));
+  Logger.log("DEBUG: signature_data is null? " + (data.signature_data === null));
+  Logger.log("DEBUG: signature_data is undefined? " + (data.signature_data === undefined));
+  Logger.log("DEBUG: signature_data value: " + data.signature_data);
+  
+  if (data.signature_data && String(data.signature_data).trim() !== "") {
     try {
-      const signatureUrl = saveFileToGoogleDrive(
+      Logger.log("DEBUG: Starting signature upload for " + id_employees);
+      Logger.log("DEBUG: signature_data length: " + data.signature_data.length);
+      Logger.log("DEBUG: signature_data type: " + typeof data.signature_data);
+      Logger.log("DEBUG: signature_data first 100 chars: " + String(data.signature_data).substring(0, 100));
+      
+      // Create filename with format: UUID.Signature_Staff.timestamp.png
+      const timestamp = Math.floor(Date.now() / 1000);  // Epoch seconds
+      const signatureFileName = id_number + ".Signature_Staff." + timestamp + ".png";
+      const folderName = "Kho_chu_ky_NV";
+      Logger.log("DEBUG: Generated filename: " + signatureFileName);
+      
+      const signatureResult = saveFileToGoogleDrive(
         data.signature_data, 
-        id_employees + "_signature.png", 
+        signatureFileName, 
         "image/png",
-        "VNAH_Signatures"  // Folder for signatures
+        folderName  // Folder for signatures
       );
-      const signatureIndex = headers.indexOf(COLUMNS.Signature_Staff);
-      if (signatureIndex !== -1) {
-        newRowData[signatureIndex] = signatureUrl;
+      Logger.log("DEBUG: Signature URL created: " + signatureResult.url);
+      const signaturePath = folderName + "/" + signatureFileName;  // Path for AppSheet: Kho_chu_ky_NV/ID.Signature_Staff.timestamp.png
+      Logger.log("DEBUG: Signature path: " + signaturePath);
+      Logger.log("DEBUG: Signature column index: " + signatureStaffIndex);
+      if (signatureStaffIndex !== -1) {
+        newRowData[signatureStaffIndex] = signaturePath;  // Save path structure for AppSheet
+        Logger.log("DEBUG: Signature path saved to row at index " + signatureStaffIndex + ": " + signaturePath);
       }
     } catch (error) {
-      Logger.log("Error uploading signature: " + error);
+      Logger.log("ERROR uploading signature: " + error);
+      Logger.log("ERROR message: " + error.message);
+      Logger.log("ERROR stack: " + error.stack);
+      Logger.log("ERROR toString: " + error.toString());
     }
+  } else {
+    Logger.log("WARNING: No signature_data provided in request or signature_data is empty");
+    Logger.log("WARNING: data.signature_data = " + data.signature_data);
   }
 
   // Handle CCCD image file upload
   if (data.cccd_image_data) {
     try {
-      const cccdUrl = saveFileToGoogleDrive(
+      // Create filename with format: UUID.ID Card Pic.timestamp.jpg
+      const timestamp = Math.floor(Date.now() / 1000);  // Epoch seconds
+      const cccdFileName = id_number + ".ID Card Pic." + timestamp + ".jpg";
+      const folderName = "Anh_chup_nhan_vien";
+      Logger.log("DEBUG: Generated CCCD filename: " + cccdFileName);
+      
+      const cccdResult = saveFileToGoogleDrive(
         data.cccd_image_data, 
-        id_employees + "_portrait.jpg", 
+        cccdFileName, 
         "image/jpeg",
-        "VNAH_PortraitPhotos"  // Folder for portrait photos
+        folderName  // Folder for ID card photos
       );
-      const cccdIndex = headers.indexOf(COLUMNS.Scan_CCCD);
-      if (cccdIndex !== -1) {
-        newRowData[cccdIndex] = cccdUrl;
+      Logger.log("DEBUG: CCCD URL created: " + cccdResult.url);
+      const cccdPath = folderName + "/" + cccdFileName;  // Path for AppSheet: Anh_chup_nhan_vien/ID.ID Card Pic.timestamp.jpg
+      Logger.log("DEBUG: CCCD path: " + cccdPath);
+      Logger.log("DEBUG: CCCD column index: " + idCardPicIndex);
+      if (idCardPicIndex !== -1) {
+        newRowData[idCardPicIndex] = cccdPath;  // Save path structure for AppSheet
+        Logger.log("DEBUG: CCCD path saved to ID Card Pic column at index " + idCardPicIndex + ": " + cccdPath);
       }
     } catch (error) {
-      Logger.log("Error uploading portrait photo: " + error);
+      Logger.log("Error uploading ID card photo: " + error);
     }
   }
 
@@ -400,6 +454,7 @@ function buildEmployee(record) {
     Relation_ship: valueOf(record, COLUMNS.Relation_ship),
     Signature_Staff: valueOf(record, COLUMNS.Signature_Staff),
     Scan_CCCD: valueOf(record, COLUMNS.Scan_CCCD),
+    ID_Card_Pic: valueOf(record, COLUMNS.ID_Card_Pic),
   };
 }
 
@@ -416,36 +471,60 @@ function normalizePhone(value) {
 }
 
 /**
- * Save base64 data as file in Google Drive and return shareable URL
+ * Save base64 data as file in Google Drive and return shareable URL + path structure
  * @param {string} base64Data - Base64 encoded file data
  * @param {string} fileName - Name of the file
  * @param {string} mimeType - MIME type (e.g., image/png, image/jpeg)
  * @param {string} folderName - Google Drive folder name to save in
+ * @returns {object} { url: googleDriveUrl, path: "folderName/fileName" }
  */
 function saveFileToGoogleDrive(base64Data, fileName, mimeType, folderName) {
   try {
+    Logger.log("=== saveFileToGoogleDrive START ===");
+    Logger.log("fileName: " + fileName);
+    Logger.log("mimeType: " + mimeType);
+    Logger.log("folderName: " + folderName);
+    Logger.log("base64Data length: " + base64Data.length);
+    
     // Extract base64 content (remove data:image/png;base64, prefix if present)
     const base64String = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    Logger.log("After extraction - base64String length: " + base64String.length);
     
     // Decode base64 to bytes
     const decodedData = Utilities.base64Decode(base64String);
+    Logger.log("Decoded data size: " + decodedData.length + " bytes");
     
     // Create blob
     const blob = Utilities.newBlob(decodedData, mimeType, fileName);
+    Logger.log("Blob created: " + blob.getName());
     
     // Get or create the specified folder in Google Drive
+    Logger.log("Finding/creating folder: " + folderName);
     let folder = findOrCreateFolder(folderName);
+    Logger.log("Folder found/created, ID: " + folder.getId());
     
     // Create file in folder
+    Logger.log("Creating file in folder...");
     const file = folder.createFile(blob);
+    Logger.log("File created: " + file.getName() + " (ID: " + file.getId() + ")");
     
     // Set file to be viewable by anyone with link
+    Logger.log("Setting sharing permissions...");
     file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+    Logger.log("Sharing permissions set");
     
-    // Return shareable link
-    return file.getUrl();
+    // Return both shareable link and path structure
+    const url = file.getUrl();
+    const path = folderName + "/" + fileName;  // Path structure for AppSheet: folderName/fileName
+    Logger.log("File URL: " + url);
+    Logger.log("File Path: " + path);
+    Logger.log("=== saveFileToGoogleDrive SUCCESS ===");
+    return { url: url, path: path };
   } catch (error) {
-    Logger.log("Error saving file to Google Drive: " + error);
+    Logger.log("=== saveFileToGoogleDrive ERROR ===");
+    Logger.log("Error message: " + error.message);
+    Logger.log("Error: " + error);
+    Logger.log("Error toString: " + error.toString());
     throw error;
   }
 }
@@ -455,16 +534,22 @@ function saveFileToGoogleDrive(base64Data, fileName, mimeType, folderName) {
  */
 function findOrCreateFolder(folderName) {
   try {
+    Logger.log("Looking for folder: " + folderName);
     const folders = DriveApp.getFoldersByName(folderName);
     
     if (folders.hasNext()) {
-      return folders.next();
+      const folder = folders.next();
+      Logger.log("Folder found: " + folder.getId());
+      return folder;
     } else {
-      // Create new folder in root
-      return DriveApp.createFolder(folderName);
+      Logger.log("Folder not found, creating new folder: " + folderName);
+      const newFolder = DriveApp.createFolder(folderName);
+      Logger.log("New folder created: " + newFolder.getId());
+      return newFolder;
     }
   } catch (error) {
-    Logger.log("Error finding/creating folder: " + error);
+    Logger.log("ERROR in findOrCreateFolder: " + error);
+    Logger.log("ERROR: " + error.toString());
     throw error;
   }
 }
@@ -473,4 +558,63 @@ function respond(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Test function to check Google Drive permissions
+ * Call this to verify GAS can access Drive
+ */
+function testGoogleDriveAccess() {
+  try {
+    Logger.log("=== TEST: Google Drive Access ===");
+    
+    // Test 1: Can we list folders?
+    Logger.log("Test 1: Listing folders in Drive root...");
+    const folders = DriveApp.getFoldersByName("VNAH_Signatures");
+    let folderCount = 0;
+    while (folders.hasNext()) {
+      folders.next();
+      folderCount++;
+    }
+    Logger.log("Found " + folderCount + " folders named 'VNAH_Signatures'");
+    
+    // Test 2: Can we create a test folder?
+    Logger.log("Test 2: Creating test folder...");
+    const testFolder = DriveApp.createFolder("VNAH_TEST_" + new Date().getTime());
+    Logger.log("Test folder created: " + testFolder.getId());
+    
+    // Test 3: Can we create a file?
+    Logger.log("Test 3: Creating test file...");
+    const blob = Utilities.newBlob("Test content", "text/plain", "test.txt");
+    const file = testFolder.createFile(blob);
+    Logger.log("Test file created: " + file.getId());
+    
+    // Test 4: Can we set sharing?
+    Logger.log("Test 4: Setting sharing permissions...");
+    file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+    Logger.log("Sharing set successfully");
+    
+    // Test 5: Get the file URL
+    const url = file.getUrl();
+    Logger.log("File URL: " + url);
+    
+    Logger.log("=== ALL TESTS PASSED ===");
+    return {
+      success: true,
+      message: "Google Drive access working!",
+      testFolderId: testFolder.getId(),
+      testFileId: file.getId()
+    };
+    
+  } catch (error) {
+    Logger.log("=== TEST FAILED ===");
+    Logger.log("Error: " + error);
+    Logger.log("Error message: " + error.message);
+    Logger.log("Error stack: " + error.stack);
+    return {
+      success: false,
+      error: error.toString(),
+      message: "Google Drive access FAILED - check authorization!"
+    };
+  }
 }
