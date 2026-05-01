@@ -250,7 +250,12 @@ function registerEmployee(data) {
   // Handle signature file upload
   if (data.signature_data) {
     try {
-      const signatureUrl = saveFileToGoogleDrive(data.signature_data, id_employees + "_signature.png", "image/png");
+      const signatureUrl = saveFileToGoogleDrive(
+        data.signature_data, 
+        id_employees + "_signature.png", 
+        "image/png",
+        "VNAH_Signatures"  // Folder for signatures
+      );
       const signatureIndex = headers.indexOf(COLUMNS.Signature_Staff);
       if (signatureIndex !== -1) {
         newRowData[signatureIndex] = signatureUrl;
@@ -263,13 +268,18 @@ function registerEmployee(data) {
   // Handle CCCD image file upload
   if (data.cccd_image_data) {
     try {
-      const cccdUrl = saveFileToGoogleDrive(data.cccd_image_data, id_employees + "_cccd.jpg", "image/jpeg");
+      const cccdUrl = saveFileToGoogleDrive(
+        data.cccd_image_data, 
+        id_employees + "_portrait.jpg", 
+        "image/jpeg",
+        "VNAH_PortraitPhotos"  // Folder for portrait photos
+      );
       const cccdIndex = headers.indexOf(COLUMNS.Scan_CCCD);
       if (cccdIndex !== -1) {
         newRowData[cccdIndex] = cccdUrl;
       }
     } catch (error) {
-      Logger.log("Error uploading CCCD image: " + error);
+      Logger.log("Error uploading portrait photo: " + error);
     }
   }
 
@@ -407,8 +417,12 @@ function normalizePhone(value) {
 
 /**
  * Save base64 data as file in Google Drive and return shareable URL
+ * @param {string} base64Data - Base64 encoded file data
+ * @param {string} fileName - Name of the file
+ * @param {string} mimeType - MIME type (e.g., image/png, image/jpeg)
+ * @param {string} folderName - Google Drive folder name to save in
  */
-function saveFileToGoogleDrive(base64Data, fileName, mimeType) {
+function saveFileToGoogleDrive(base64Data, fileName, mimeType, folderName) {
   try {
     // Extract base64 content (remove data:image/png;base64, prefix if present)
     const base64String = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
@@ -419,8 +433,8 @@ function saveFileToGoogleDrive(base64Data, fileName, mimeType) {
     // Create blob
     const blob = Utilities.newBlob(decodedData, mimeType, fileName);
     
-    // Get or create "VNAH_Documents" folder in Google Drive
-    let folder = findOrCreateFolder("VNAH_Documents");
+    // Get or create the specified folder in Google Drive
+    let folder = findOrCreateFolder(folderName);
     
     // Create file in folder
     const file = folder.createFile(blob);

@@ -10,6 +10,13 @@ interface SignatureAndDocumentsProps {
   };
 }
 
+/**
+ * SignatureAndDocuments Component
+ * 
+ * Handles two file captures:
+ * 1. Signature - Drawn on canvas, stored in Google Drive "VNAH_Signatures" folder
+ * 2. Portrait Photo (CCCD/ID) - Uploaded image, stored in Google Drive "VNAH_PortraitPhotos" folder
+ */
 export default function SignatureAndDocuments({
   onSignatureCaptured,
   onCCCDImageCaptured,
@@ -126,7 +133,10 @@ export default function SignatureAndDocuments({
     <div className="space-y-6">
       {/* Signature Section */}
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h3 className="text-lg font-semibold mb-3 text-gray-900">Chữ ký nhân viên</h3>
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">🖊️ Chữ ký nhân viên</h3>
+        <p className="text-xs text-blue-600 mb-3 font-medium">
+          💾 Lưu vào: Google Drive / VNAH_Signatures
+        </p>
         <p className="text-sm text-gray-600 mb-3">Vẽ chữ ký của bạn trong ô dưới đây</p>
 
         <canvas
@@ -163,7 +173,10 @@ export default function SignatureAndDocuments({
 
       {/* CCCD Image Section */}
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h3 className="text-lg font-semibold mb-3 text-gray-900">Ảnh CCCD / CMND</h3>
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">📷 Ảnh chân dung (CCCD/CMND)</h3>
+        <p className="text-xs text-blue-600 mb-3 font-medium">
+          💾 Lưu vào: Google Drive / VNAH_PortraitPhotos
+        </p>
         <p className="text-sm text-gray-600 mb-3">Tải lên ảnh scan CCCD hoặc CMND (JPG, PNG, tối đa 5MB)</p>
 
         {!cccdPreview ? (
