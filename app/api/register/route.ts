@@ -3,6 +3,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL;
 
+/**
+ * Job titles mapping (Vietnamese name -> Code)
+ */
+const TITLES: Record<string, number> = {
+  'Nhân viên': 7,
+  'Điều dưỡng': 13,
+  'KTV': 14,
+  'Bác sĩ': 10,
+  'CTV': 11,
+  'Y sĩ': 12,
+  'Khác': 15,
+};
+
 interface RegisterPayload {
   id_employees: string;
   password: string;
@@ -18,6 +31,7 @@ interface RegisterPayload {
   zalo: string;
   email: string;
   working_at: string;
+  title: string;
 }
 
 /**
@@ -68,6 +82,7 @@ function validateRequired(data: Partial<RegisterPayload>): { valid: boolean; err
     'phone',
     'email',
     'working_at',
+    'title',
   ];
 
   for (const field of requiredFields) {
@@ -136,27 +151,28 @@ export async function POST(request: NextRequest) {
       zalo,
       email,
       working_at,
+      title,
     } = body as RegisterPayload;
 
-    // Step 2: Validate username format (3-20 chars, letters/numbers/underscore only)
+    // Step 2: Validate username format (3+ chars, alphanumeric and underscore allowed)
     const id = id_employees.trim();
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(id)) {
+    if (!/^[a-zA-Z0-9_]{3,}$/.test(id)) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Tên đăng nhập phải 3-20 ký tự, chỉ gồm chữ, số, dấu gạch dưới',
+          message: 'Tên đăng nhập phải tối thiểu 3 ký tự, gồm chữ, số, dấu gạch dưới',
           field: 'id_employees',
         },
         { status: 400 }
       );
     }
 
-    // Step 3: Validate password strength
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) {
+    // Step 3: Validate password strength (minimum 6 characters)
+    if (password.length < 6) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt',
+          message: 'Mật khẩu phải tối thiểu 6 ký tự',
           field: 'password',
         },
         { status: 400 }
@@ -197,10 +213,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Step 7a: Validate title (must be in TITLES mapping)
+    const titleTrimmed = title.trim();
+    if (!TITLES[titleTrimmed]) {
+      return NextResponse.json(
+        { success: false, message: 'Chức vụ không hợp lệ', field: 'title' },
+        { status: 400 }
+      );
+    }
+    const titleCode = TITLES[titleTrimmed];
+
     const fullAddress = `${address_detail.trim()}, ${ward.trim()}, ${district.trim()}, ${province.trim()}`;
 
     // Step 8: Generate UUID for ID_number (unique employee system identifier)
     const idNumber = generateUUID();
+
+    // Step 8a: Combine agency_type and working_at for Working_at column
+    const combinedWorkingAt = `${agency_type.trim()} - ${working_at.trim()}`;
+
+    // Step 8b: Set relation_ship to "Bên ngoài tổ chức"
+    const relationshipValue = 'Bên ngoài tổ chức';
 
     // Step 9: Prepare GAS payload
     const gasPayload = {
@@ -218,8 +250,13 @@ export async function POST(request: NextRequest) {
       phone: normalizedPhone,
       zalo: normalizedZalo,
       email: email.trim().toLowerCase(),
-      working_at: working_at.trim(),
+      working_at: combinedWorkingAt,
       ward: ward.trim(),
+      relation_ship: relationshipValue,
+      title: titleCode, // Store code (not name)
+      department: 3, // Default Department ID
+      branch: 'TT_8', // Default Branch
+      branch_code: 'TT_8', // Default Branch CODE
     };
 
     // Step 10: Call Google Apps Script to register

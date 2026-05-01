@@ -21,6 +21,7 @@ interface RegisterFormData {
   zalo: string;
   email: string;
   working_at: string;
+  title: string;
 }
 
 type FieldName = keyof RegisterFormData;
@@ -37,6 +38,16 @@ const AGENCY_TYPES = [
   'Trạm y tế',
   'Sở y tế',
   'Phòng khám',
+  'Khác',
+];
+
+const TITLES = [
+  'Nhân viên',
+  'Điều dưỡng',
+  'KTV',
+  'Bác sĩ',
+  'CTV',
+  'Y sĩ',
   'Khác',
 ];
 
@@ -73,6 +84,7 @@ export default function RegisterPage() {
     zalo: '',
     email: '',
     working_at: '',
+    title: '',
   });
 
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
@@ -282,14 +294,14 @@ export default function RegisterPage() {
 
     if (!form.id_employees.trim()) {
       nextErrors.id_employees = 'Gợi ý: Bạn chưa nhập tên đăng nhập';
-    } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.id_employees.trim())) {
-      nextErrors.id_employees = 'Tên đăng nhập phải 3-20 ký tự, chỉ gồm chữ, số, dấu gạch dưới';
+    } else if (!/^[a-zA-Z0-9_]{3,}$/.test(form.id_employees.trim())) {
+      nextErrors.id_employees = 'Tên đăng nhập phải tối thiểu 3 ký tự, chỉ gồm chữ, số, dấu gạch dưới';
     }
 
     if (!form.password) {
       nextErrors.password = 'Mật khẩu không được để trống';
-    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(form.password)) {
-      nextErrors.password = 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+    } else if (form.password.length < 6) {
+      nextErrors.password = 'Mật khẩu phải tối thiểu 6 ký tự';
     }
 
     if (!form.passwordConfirm) {
@@ -348,6 +360,10 @@ export default function RegisterPage() {
 
     if (!form.working_at.trim()) {
       nextErrors.working_at = 'Nơi làm việc không được để trống';
+    }
+
+    if (!form.title) {
+      nextErrors.title = 'Vui lòng chọn chức vụ';
     }
 
     if (!form.address_detail.trim()) {
@@ -418,6 +434,7 @@ export default function RegisterPage() {
           zalo: form.zalo,
           email: form.email,
           working_at: form.working_at,
+          title: form.title,
         })
       });
 
@@ -516,7 +533,7 @@ export default function RegisterPage() {
                 {errors.id_employees ? (
                   <p className="text-xs text-red-600 mt-1">{errors.id_employees}</p>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-1">3-20 ký tự (chữ, số, gạch dưới)</p>
+                  <p className="text-xs text-gray-500 mt-1">Tối thiểu 3 ký tự (chữ, số, gạch dưới)</p>
                 )}
               </div>
 
@@ -529,7 +546,7 @@ export default function RegisterPage() {
                   name="password"
                   value={form.password}
                   onChange={handleInputChange}
-                  placeholder="Tối thiểu 8 ký tự"
+                  placeholder="Tối thiểu 6 ký tự"
                   className={fieldClass('password')}
                   disabled={loading}
                 />
@@ -808,7 +825,7 @@ export default function RegisterPage() {
               {errors.agency_type ? <p className="text-xs text-red-600 mt-1">{errors.agency_type}</p> : null}
             </div>
 
-              {/* Row 9: Working_at only */}
+              {/* Row 9: Working_at & Title */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -826,7 +843,24 @@ export default function RegisterPage() {
                 {errors.working_at ? <p className="text-xs text-red-600 mt-1">{errors.working_at}</p> : null}
               </div>
 
-                <div></div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Chức vụ *
+                </label>
+                <select
+                  name="title"
+                  value={form.title}
+                  onChange={handleInputChange}
+                  className={fieldClass('title')}
+                  disabled={loading}
+                >
+                  <option value="">-- Chọn chức vụ --</option>
+                  {TITLES.map((title) => (
+                    <option key={title} value={title}>{title}</option>
+                  ))}
+                </select>
+                {errors.title ? <p className="text-xs text-red-600 mt-1">{errors.title}</p> : null}
+              </div>
             </div>
       </section>
 

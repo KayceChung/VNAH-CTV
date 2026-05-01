@@ -11,6 +11,7 @@ const COLUMNS = {
   Zalo: "Zalo",
   Email: "Email",
   Branch: "Branch",
+  Branch_CODE: "Branch_CODE",
   Department: "Department",
   Title: "Title",
   Working_at: "Working_at",
@@ -21,6 +22,7 @@ const COLUMNS = {
   LAST_CHANGE_AT: "LAST_CHANGE_AT",
   COUNT: "COUNT",
   UPDATE_AT: "UPDATE_AT",
+  Relation_ship: "Relation_ship",
 };
 
 function doPost(e) {
@@ -127,6 +129,11 @@ function registerEmployee(data) {
   const email = String(data.email || "").trim().toLowerCase();
   const working_at = String(data.working_at || "").trim();
   const ward = String(data.ward || "").trim();
+  const relation_ship = String(data.relation_ship || "").trim();
+  const title = String(data.title || "").trim();
+  const department = String(data.department || "3").trim();
+  const branch = String(data.branch || "TT_8").trim();
+  const branch_code = String(data.branch_code || "TT_8").trim();
 
   // Validate all required fields
   if (!id_employees || !password || !name || !dob || !sex || !address || !phone || !email || !working_at || !ward) {
@@ -177,11 +184,16 @@ function registerEmployee(data) {
   const wardIndex = headers.indexOf(COLUMNS.Ward);
   const idEmployeesIndex = headers.indexOf(COLUMNS.ID_Employees);
   const passwordIndex = headers.indexOf(COLUMNS.Pass_word);
+  const titleIndex = headers.indexOf(COLUMNS.Title);
+  const departmentIndex = headers.indexOf(COLUMNS.Department);
+  const branchIndex = headers.indexOf(COLUMNS.Branch);
+  const branchCodeIndex = headers.indexOf(COLUMNS.Branch_CODE);
   const statusIndex = headers.indexOf(COLUMNS.Status);
   const lastChangeByIndex = headers.indexOf(COLUMNS.LAST_CHANGE_BY);
   const lastChangeAtIndex = headers.indexOf(COLUMNS.LAST_CHANGE_AT);
   const countIndex = headers.indexOf(COLUMNS.COUNT);
   const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
+  const relationshipIndex = headers.indexOf(COLUMNS.Relation_ship);
 
   // Validate all required columns exist
   if (idNumberIndex === -1 || idEmployeesIndex === -1 || passwordIndex === -1 || nameIndex === -1) {
@@ -212,6 +224,11 @@ function registerEmployee(data) {
   if (emailIndex2 !== -1) newRowData[emailIndex2] = email;
   if (workingAtIndex !== -1) newRowData[workingAtIndex] = working_at;
   if (wardIndex !== -1) newRowData[wardIndex] = ward;
+  if (titleIndex !== -1) newRowData[titleIndex] = title;
+  if (departmentIndex !== -1) newRowData[departmentIndex] = department;
+  if (branchIndex !== -1) newRowData[branchIndex] = branch;
+  if (branchCodeIndex !== -1) newRowData[branchCodeIndex] = branch_code;
+  if (relationshipIndex !== -1) newRowData[relationshipIndex] = relation_ship;
   if (statusIndex !== -1) newRowData[statusIndex] = "❌ DEACTIVATE";
   if (lastChangeByIndex !== -1) newRowData[lastChangeByIndex] = "SYSTEM_REGISTER";
   if (lastChangeAtIndex !== -1) newRowData[lastChangeAtIndex] = now;
@@ -332,6 +349,7 @@ function buildEmployee(record) {
     ID_number: valueOf(record, COLUMNS.ID_number),
     Status: valueOf(record, COLUMNS.Status),
     Pass_word: valueOf(record, COLUMNS.Pass_word),
+    Relation_ship: valueOf(record, COLUMNS.Relation_ship),
   };
 }
 
