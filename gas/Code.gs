@@ -1,4 +1,4 @@
-const SHEET_NAME = "Employees";
+const SHEET_NAME = "NHÂN_SỰ";
 
 const COLUMNS = {
   ID_Employees: "ID Employess",
@@ -12,11 +12,11 @@ const COLUMNS = {
   Email: "Email",
   Branch: "Branch",
   Branch_CODE: "Branch_CODE",
-  Department: "Department ID",
-  Title: "Title ID",
+  Department: "Department",
+  Title: "Title",
   Working_at: "Working_at",
   Ward: "Ward",
-  ID_number: "ID number",
+  ID_number: "ID",
   Status: "Status",
   LAST_CHANGE_BY: "LAST_CHANGE_BY",
   LAST_CHANGE_AT: "LAST_CHANGE_AT",
