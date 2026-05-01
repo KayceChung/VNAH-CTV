@@ -265,77 +265,89 @@ function registerEmployee(data) {
   if (countIndex !== -1) newRowData[countIndex] = 1;
   if (updateAtIndex !== -1) newRowData[updateAtIndex] = now;
 
-  // Handle signature file upload
-  Logger.log("DEBUG: signature_data present? " + (!!data.signature_data));
-  Logger.log("DEBUG: signature_data is null? " + (data.signature_data === null));
-  Logger.log("DEBUG: signature_data is undefined? " + (data.signature_data === undefined));
-  Logger.log("DEBUG: signature_data value: " + data.signature_data);
+  // ===== VALIDATE & SAVE SIGNATURE FILE =====
+  Logger.log("=== SIGNATURE PROCESSING START ===");
+  Logger.log("signature_data present? " + (!!data.signature_data));
+  Logger.log("signature_data length: " + (data.signature_data ? String(data.signature_data).length : 0));
   
-  if (data.signature_data && String(data.signature_data).trim() !== "") {
-    try {
-      Logger.log("DEBUG: Starting signature upload for " + id_employees);
-      Logger.log("DEBUG: signature_data length: " + data.signature_data.length);
-      Logger.log("DEBUG: signature_data type: " + typeof data.signature_data);
-      Logger.log("DEBUG: signature_data first 100 chars: " + String(data.signature_data).substring(0, 100));
-      
-      // Create filename with format: UUID.Signature_Staff.timestamp.png
-      const timestamp = Math.floor(Date.now() / 1000);  // Epoch seconds
-      const signatureFileName = id_number + ".Signature_Staff." + timestamp + ".png";
-      const folderName = "Kho_chu_ky_NV";
-      Logger.log("DEBUG: Generated filename: " + signatureFileName);
-      
-      const signatureResult = saveFileToGoogleDrive(
-        data.signature_data, 
-        signatureFileName, 
-        "image/png",
-        folderName  // Folder for signatures
-      );
-      Logger.log("DEBUG: Signature URL created: " + signatureResult.url);
-      const signaturePath = folderName + "/" + signatureFileName;  // Path for AppSheet: Kho_chu_ky_NV/ID.Signature_Staff.timestamp.png
-      Logger.log("DEBUG: Signature path: " + signaturePath);
-      Logger.log("DEBUG: Signature column index: " + signatureStaffIndex);
-      if (signatureStaffIndex !== -1) {
-        newRowData[signatureStaffIndex] = signaturePath;  // Save path structure for AppSheet
-        Logger.log("DEBUG: Signature path saved to row at index " + signatureStaffIndex + ": " + signaturePath);
-      }
-    } catch (error) {
-      Logger.log("ERROR uploading signature: " + error);
-      Logger.log("ERROR message: " + error.message);
-      Logger.log("ERROR stack: " + error.stack);
-      Logger.log("ERROR toString: " + error.toString());
-    }
-  } else {
-    Logger.log("WARNING: No signature_data provided in request or signature_data is empty");
-    Logger.log("WARNING: data.signature_data = " + data.signature_data);
+  if (!data.signature_data || String(data.signature_data).trim() === "") {
+    return respond({
+      success: false,
+      message: "Signature data is required but not provided"
+    });
   }
 
-  // Handle CCCD image file upload
-  if (data.cccd_image_data) {
-    try {
-      // Create filename with format: UUID.ID Card Pic.timestamp.jpg
-      const timestamp = Math.floor(Date.now() / 1000);  // Epoch seconds
-      const cccdFileName = id_number + ".ID Card Pic." + timestamp + ".jpg";
-      const folderName = "Anh_chup_nhan_vien";
-      Logger.log("DEBUG: Generated CCCD filename: " + cccdFileName);
-      
-      const cccdResult = saveFileToGoogleDrive(
-        data.cccd_image_data, 
-        cccdFileName, 
-        "image/jpeg",
-        folderName  // Folder for ID card photos
-      );
-      Logger.log("DEBUG: CCCD URL created: " + cccdResult.url);
-      const cccdPath = folderName + "/" + cccdFileName;  // Path for AppSheet: Anh_chup_nhan_vien/ID.ID Card Pic.timestamp.jpg
-      Logger.log("DEBUG: CCCD path: " + cccdPath);
-      Logger.log("DEBUG: CCCD column index: " + idCardPicIndex);
-      if (idCardPicIndex !== -1) {
-        newRowData[idCardPicIndex] = cccdPath;  // Save path structure for AppSheet
-        Logger.log("DEBUG: CCCD path saved to ID Card Pic column at index " + idCardPicIndex + ": " + cccdPath);
-      }
-    } catch (error) {
-      Logger.log("Error uploading ID card photo: " + error);
+  var signaturePath = "";
+  try {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signatureFileName = id_number + ".Signature_Staff." + timestamp + ".png";
+    const signatureFolderName = "Kho_chu_ky_NV";
+    Logger.log("Uploading signature: " + signatureFileName);
+    
+    const signatureResult = saveFileToGoogleDrive(
+      data.signature_data, 
+      signatureFileName, 
+      "image/png",
+      signatureFolderName
+    );
+    
+    signaturePath = signatureFolderName + "/" + signatureFileName;
+    Logger.log("Signature saved successfully: " + signaturePath);
+    
+    if (signatureStaffIndex !== -1) {
+      newRowData[signatureStaffIndex] = signaturePath;
+      Logger.log("Signature path set in row data at index " + signatureStaffIndex);
     }
+  } catch (error) {
+    Logger.log("FATAL ERROR: Failed to save signature - " + error.toString());
+    return respond({
+      success: false,
+      message: "Failed to save signature: " + error.toString()
+    });
   }
+  Logger.log("=== SIGNATURE PROCESSING END ===");
+
+  // ===== VALIDATE & SAVE CCCD IMAGE FILE =====
+  Logger.log("=== CCCD PROCESSING START ===");
+  Logger.log("cccd_image_data present? " + (!!data.cccd_image_data));
+  Logger.log("cccd_image_data length: " + (data.cccd_image_data ? String(data.cccd_image_data).length : 0));
+  
+  if (!data.cccd_image_data || String(data.cccd_image_data).trim() === "") {
+    return respond({
+      success: false,
+      message: "CCCD image data is required but not provided"
+    });
+  }
+
+  var cccdPath = "";
+  try {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const cccdFileName = id_number + ".ID Card Pic." + timestamp + ".jpg";
+    const cccdFolderName = "Anh_chup_nhan_vien";
+    Logger.log("Uploading CCCD image: " + cccdFileName);
+    
+    const cccdResult = saveFileToGoogleDrive(
+      data.cccd_image_data, 
+      cccdFileName, 
+      "image/jpeg",
+      cccdFolderName
+    );
+    
+    cccdPath = cccdFolderName + "/" + cccdFileName;
+    Logger.log("CCCD image saved successfully: " + cccdPath);
+    
+    if (idCardPicIndex !== -1) {
+      newRowData[idCardPicIndex] = cccdPath;
+      Logger.log("CCCD path set in row data at index " + idCardPicIndex);
+    }
+  } catch (error) {
+    Logger.log("FATAL ERROR: Failed to save CCCD image - " + error.toString());
+    return respond({
+      success: false,
+      message: "Failed to save CCCD image: " + error.toString()
+    });
+  }
+  Logger.log("=== CCCD PROCESSING END ===");
 
   sheet.appendRow(newRowData);
   SpreadsheetApp.flush();
@@ -472,14 +484,19 @@ function normalizePhone(value) {
 
 /**
  * Save base64 data as file in Google Drive and return shareable URL + path structure
- * @param {string} base64Data - Base64 encoded file data
+ * @param {string} base64Data - Base64 encoded file data (with or without data:image/...;base64, prefix)
  * @param {string} fileName - Name of the file
  * @param {string} mimeType - MIME type (e.g., image/png, image/jpeg)
  * @param {string} folderName - Google Drive folder name to save in
  * @returns {object} { url: googleDriveUrl, path: "folderName/fileName" }
+ * @throws {Error} If file cannot be created or folder cannot be accessed
  */
 function saveFileToGoogleDrive(base64Data, fileName, mimeType, folderName) {
   try {
+    if (!base64Data || String(base64Data).trim() === "") {
+      throw new Error("base64Data is empty or null");
+    }
+
     Logger.log("=== saveFileToGoogleDrive START ===");
     Logger.log("fileName: " + fileName);
     Logger.log("mimeType: " + mimeType);
@@ -487,69 +504,119 @@ function saveFileToGoogleDrive(base64Data, fileName, mimeType, folderName) {
     Logger.log("base64Data length: " + base64Data.length);
     
     // Extract base64 content (remove data:image/png;base64, prefix if present)
-    const base64String = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
-    Logger.log("After extraction - base64String length: " + base64String.length);
+    var base64String = base64Data;
+    if (base64Data.includes(',')) {
+      base64String = base64Data.split(',')[1];
+      Logger.log("Extracted base64 from data URI, new length: " + base64String.length);
+    }
+
+    // Validate base64 string
+    if (!base64String || String(base64String).trim() === "") {
+      throw new Error("Failed to extract base64 content");
+    }
     
     // Decode base64 to bytes
-    const decodedData = Utilities.base64Decode(base64String);
-    Logger.log("Decoded data size: " + decodedData.length + " bytes");
+    var decodedData;
+    try {
+      decodedData = Utilities.base64Decode(base64String);
+      Logger.log("Decoded data size: " + decodedData.length + " bytes");
+    } catch (decodeError) {
+      throw new Error("Failed to decode base64: " + decodeError.toString());
+    }
+
+    if (!decodedData || decodedData.length === 0) {
+      throw new Error("Decoded data is empty");
+    }
     
     // Create blob
-    const blob = Utilities.newBlob(decodedData, mimeType, fileName);
-    Logger.log("Blob created: " + blob.getName());
-    
+    var blob;
+    try {
+      blob = Utilities.newBlob(decodedData, mimeType, fileName);
+      Logger.log("Blob created: " + blob.getName() + " (" + blob.getBytes().length + " bytes)");
+    } catch (blobError) {
+      throw new Error("Failed to create blob: " + blobError.toString());
+    }
+
     // Get or create the specified folder in Google Drive
     Logger.log("Finding/creating folder: " + folderName);
-    let folder = findOrCreateFolder(folderName);
-    Logger.log("Folder found/created, ID: " + folder.getId());
+    var folder = findOrCreateFolder(folderName);
+    Logger.log("Folder accessed, ID: " + folder.getId());
     
     // Create file in folder
     Logger.log("Creating file in folder...");
-    const file = folder.createFile(blob);
-    Logger.log("File created: " + file.getName() + " (ID: " + file.getId() + ")");
-    
+    var file;
+    try {
+      file = folder.createFile(blob);
+      Logger.log("File created: " + file.getName() + " (ID: " + file.getId() + ")");
+    } catch (fileError) {
+      throw new Error("Failed to create file in folder: " + fileError.toString());
+    }
+
     // Set file to be viewable by anyone with link
     Logger.log("Setting sharing permissions...");
-    file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
-    Logger.log("Sharing permissions set");
+    try {
+      file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+      Logger.log("Sharing permissions set");
+    } catch (shareError) {
+      Logger.log("WARNING: Could not set sharing permissions: " + shareError.toString());
+      // Don't throw, file is still created
+    }
     
+    // Verify file was created
+    var verifyFile = DriveApp.getFileById(file.getId());
+    if (!verifyFile) {
+      throw new Error("File was created but cannot be verified");
+    }
+
     // Return both shareable link and path structure
-    const url = file.getUrl();
-    const path = folderName + "/" + fileName;  // Path structure for AppSheet: folderName/fileName
+    var url = file.getUrl();
+    var path = folderName + "/" + fileName;
     Logger.log("File URL: " + url);
     Logger.log("File Path: " + path);
     Logger.log("=== saveFileToGoogleDrive SUCCESS ===");
+    
     return { url: url, path: path };
   } catch (error) {
-    Logger.log("=== saveFileToGoogleDrive ERROR ===");
+    Logger.log("=== saveFileToGoogleDrive FATAL ERROR ===");
     Logger.log("Error message: " + error.message);
-    Logger.log("Error: " + error);
-    Logger.log("Error toString: " + error.toString());
+    Logger.log("Error: " + error.toString());
     throw error;
   }
 }
 
 /**
- * Find or create a folder in Google Drive
+ * Find or create a folder in Google Drive (in root)
+ * @param {string} folderName - Name of the folder to find or create
+ * @returns {Folder} The folder object
+ * @throws {Error} If folder cannot be accessed or created
  */
 function findOrCreateFolder(folderName) {
   try {
+    if (!folderName || String(folderName).trim() === "") {
+      throw new Error("folderName is empty or null");
+    }
+
     Logger.log("Looking for folder: " + folderName);
-    const folders = DriveApp.getFoldersByName(folderName);
+    var folders = DriveApp.getFoldersByName(folderName);
     
     if (folders.hasNext()) {
-      const folder = folders.next();
+      var folder = folders.next();
       Logger.log("Folder found: " + folder.getId());
       return folder;
     } else {
       Logger.log("Folder not found, creating new folder: " + folderName);
-      const newFolder = DriveApp.createFolder(folderName);
+      var newFolder = DriveApp.createFolder(folderName);
       Logger.log("New folder created: " + newFolder.getId());
+      
+      // Verify folder was created
+      if (!newFolder || !newFolder.getId()) {
+        throw new Error("Folder was created but cannot be accessed");
+      }
+      
       return newFolder;
     }
   } catch (error) {
-    Logger.log("ERROR in findOrCreateFolder: " + error);
-    Logger.log("ERROR: " + error.toString());
+    Logger.log("FATAL ERROR in findOrCreateFolder: " + error.toString());
     throw error;
   }
 }
