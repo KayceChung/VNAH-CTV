@@ -23,6 +23,8 @@ const COLUMNS = {
   COUNT: "COUNT",
   UPDATE_AT: "UPDATE_AT",
   Relation_ship: "Relation_ship",
+  Signature_Staff: "Signature_Staff",
+  Scan_CCCD: "Scan CCCD",
 };
 
 function doPost(e) {
@@ -245,6 +247,32 @@ function registerEmployee(data) {
   if (countIndex !== -1) newRowData[countIndex] = 1;
   if (updateAtIndex !== -1) newRowData[updateAtIndex] = now;
 
+  // Handle signature file upload
+  if (data.signature_data) {
+    try {
+      const signatureUrl = saveFileToGoogleDrive(data.signature_data, id_employees + "_signature.png", "image/png");
+      const signatureIndex = headers.indexOf(COLUMNS.Signature_Staff);
+      if (signatureIndex !== -1) {
+        newRowData[signatureIndex] = signatureUrl;
+      }
+    } catch (error) {
+      Logger.log("Error uploading signature: " + error);
+    }
+  }
+
+  // Handle CCCD image file upload
+  if (data.cccd_image_data) {
+    try {
+      const cccdUrl = saveFileToGoogleDrive(data.cccd_image_data, id_employees + "_cccd.jpg", "image/jpeg");
+      const cccdIndex = headers.indexOf(COLUMNS.Scan_CCCD);
+      if (cccdIndex !== -1) {
+        newRowData[cccdIndex] = cccdUrl;
+      }
+    } catch (error) {
+      Logger.log("Error uploading CCCD image: " + error);
+    }
+  }
+
   sheet.appendRow(newRowData);
   SpreadsheetApp.flush();
 
@@ -360,6 +388,8 @@ function buildEmployee(record) {
     Status: valueOf(record, COLUMNS.Status),
     Pass_word: valueOf(record, COLUMNS.Pass_word),
     Relation_ship: valueOf(record, COLUMNS.Relation_ship),
+    Signature_Staff: valueOf(record, COLUMNS.Signature_Staff),
+    Scan_CCCD: valueOf(record, COLUMNS.Scan_CCCD),
   };
 }
 
@@ -373,6 +403,56 @@ function normalizeText(value) {
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
+}
+
+/**
+ * Save base64 data as file in Google Drive and return shareable URL
+ */
+function saveFileToGoogleDrive(base64Data, fileName, mimeType) {
+  try {
+    // Extract base64 content (remove data:image/png;base64, prefix if present)
+    const base64String = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    
+    // Decode base64 to bytes
+    const decodedData = Utilities.base64Decode(base64String);
+    
+    // Create blob
+    const blob = Utilities.newBlob(decodedData, mimeType, fileName);
+    
+    // Get or create "VNAH_Documents" folder in Google Drive
+    let folder = findOrCreateFolder("VNAH_Documents");
+    
+    // Create file in folder
+    const file = folder.createFile(blob);
+    
+    // Set file to be viewable by anyone with link
+    file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+    
+    // Return shareable link
+    return file.getUrl();
+  } catch (error) {
+    Logger.log("Error saving file to Google Drive: " + error);
+    throw error;
+  }
+}
+
+/**
+ * Find or create a folder in Google Drive
+ */
+function findOrCreateFolder(folderName) {
+  try {
+    const folders = DriveApp.getFoldersByName(folderName);
+    
+    if (folders.hasNext()) {
+      return folders.next();
+    } else {
+      // Create new folder in root
+      return DriveApp.createFolder(folderName);
+    }
+  } catch (error) {
+    Logger.log("Error finding/creating folder: " + error);
+    throw error;
+  }
 }
 
 function respond(data) {

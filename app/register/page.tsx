@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import SignatureAndDocuments from '@/components/SignatureAndDocuments';
 
 interface RegisterFormData {
   id_employees: string;
@@ -22,6 +23,8 @@ interface RegisterFormData {
   email: string;
   working_at: string;
   title: string;
+  signature_data?: string;
+  cccd_image_data?: string;
 }
 
 type FieldName = keyof RegisterFormData;
@@ -88,6 +91,8 @@ export default function RegisterPage() {
   });
 
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
+  const [signatureData, setSignatureData] = useState<string>('');
+  const [cccdImageData, setCCCDImageData] = useState<string>('');
 
   /**
    * Evaluate password strength
@@ -435,6 +440,8 @@ export default function RegisterPage() {
           email: form.email,
           working_at: form.working_at,
           title: form.title,
+          signature_data: signatureData,
+          cccd_image_data: cccdImageData,
         })
       });
 
@@ -863,6 +870,16 @@ export default function RegisterPage() {
               </div>
             </div>
       </section>
+
+            {/* Signature & Documents Section */}
+            <SignatureAndDocuments
+              onSignatureCaptured={setSignatureData}
+              onCCCDImageCaptured={setCCCDImageData}
+              errors={{
+                signature: undefined,
+                cccd_image: undefined,
+              }}
+            />
 
             {/* Submit Button */}
             <button

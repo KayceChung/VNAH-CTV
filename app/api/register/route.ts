@@ -32,6 +32,8 @@ interface RegisterPayload {
   email: string;
   working_at: string;
   title: string;
+  signature_data?: string; // Base64 canvas signature
+  cccd_image_data?: string; // Base64 CCCD image
 }
 
 /**
@@ -152,6 +154,8 @@ export async function POST(request: NextRequest) {
       email,
       working_at,
       title,
+      signature_data,
+      cccd_image_data,
     } = body as RegisterPayload;
 
     // Step 2: Validate username format (3+ chars, alphanumeric, underscore, and Vietnamese characters allowed)
@@ -257,6 +261,8 @@ export async function POST(request: NextRequest) {
       department: 3, // Default Department ID
       branch: 'TT_8', // Default Branch
       branch_code: 'TT_8', // Default Branch CODE
+      signature_data: signature_data || null, // Base64 canvas signature
+      cccd_image_data: cccd_image_data || null, // Base64 CCCD image
     };
 
     // Step 10: Call Google Apps Script to register
