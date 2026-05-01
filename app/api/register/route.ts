@@ -154,9 +154,9 @@ export async function POST(request: NextRequest) {
       title,
     } = body as RegisterPayload;
 
-    // Step 2: Validate username format (3+ chars, alphanumeric and underscore allowed)
+    // Step 2: Validate username format (3+ chars, alphanumeric, underscore, and Vietnamese characters allowed)
     const id = id_employees.trim();
-    if (!/^[a-zA-Z0-9_]{3,}$/.test(id)) {
+    if (!/^[\p{L}0-9_]{3,}$/u.test(id)) {
       return NextResponse.json(
         {
           success: false,

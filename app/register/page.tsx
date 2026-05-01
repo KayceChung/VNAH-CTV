@@ -294,8 +294,8 @@ export default function RegisterPage() {
 
     if (!form.id_employees.trim()) {
       nextErrors.id_employees = 'Gợi ý: Bạn chưa nhập tên đăng nhập';
-    } else if (!/^[a-zA-Z0-9_]{3,}$/.test(form.id_employees.trim())) {
-      nextErrors.id_employees = 'Tên đăng nhập phải tối thiểu 3 ký tự, chỉ gồm chữ, số, dấu gạch dưới';
+    } else if (!/^[\p{L}0-9_]{3,}$/u.test(form.id_employees.trim())) {
+      nextErrors.id_employees = 'Tên đăng nhập phải tối thiểu 3 ký tự';
     }
 
     if (!form.password) {
@@ -533,7 +533,7 @@ export default function RegisterPage() {
                 {errors.id_employees ? (
                   <p className="text-xs text-red-600 mt-1">{errors.id_employees}</p>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-1">Tối thiểu 3 ký tự (chữ, số, gạch dưới)</p>
+                  <p className="text-xs text-gray-500 mt-1">Tối thiểu 3 ký tự (có thể gồm cả dấu tiếng Việt)</p>
                 )}
               </div>
 

@@ -195,6 +195,16 @@ function registerEmployee(data) {
   const updateAtIndex = headers.indexOf(COLUMNS.UPDATE_AT);
   const relationshipIndex = headers.indexOf(COLUMNS.Relation_ship);
 
+  // Debug logging for column indices
+  Logger.log("Column Indices Debug:");
+  Logger.log("ID_number: " + idNumberIndex + " (expected col A)");
+  Logger.log("Working_at: " + workingAtIndex + " (expected col AP)");
+  Logger.log("Relation_ship: " + relationshipIndex + " (expected col Z)");
+  Logger.log("Department: " + departmentIndex + " (expected col AG)");
+  Logger.log("Branch: " + branchIndex + " (expected col W)");
+  Logger.log("Branch_CODE: " + branchCodeIndex + " (expected col X)");
+  Logger.log("Title: " + titleIndex + " (expected col AI)");
+
   // Validate all required columns exist
   if (idNumberIndex === -1 || idEmployeesIndex === -1 || passwordIndex === -1 || nameIndex === -1) {
     return respond({

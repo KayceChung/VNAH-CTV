@@ -86,37 +86,37 @@ export function GuideImageGallery({
     {
       src: "/images/guide-mobile1.jpg",
       alt: "Hướng dẫn Mobile - Bước 1",
-      title: "Bước 1: Cài đặt ứng dụng",
+      title: "Bước 1: Cài đặt đặt 'APPSHEET' trên điện thoại của bạn từ App Store hoặc Google Play",
     },
     {
       src: "/images/guide-mobile2.jpg",
       alt: "Hướng dẫn Mobile - Bước 2",
-      title: "Bước 2: Mở ứng dụng",
+      title: "Bước 2: search 'APPSHEET' trên điện thoại và mở ứng dụng",
     },
     {
       src: "/images/guide-mobile3.jpg",
       alt: "Hướng dẫn Mobile - Bước 3",
-      title: "Bước 3: Đăng nhập tài khoản",
+      title: "Bước 3: Cài đặt 'APPSHEET' trên điện thoại của bạn",
     },
     {
       src: "/images/guide-mobile4.jpg",
       alt: "Hướng dẫn Mobile - Bước 4",
-      title: "Bước 4: Xác nhận thông tin",
+      title: "Bước 4: Truy cập phần mềm từ mục 'TRUY CẬP' phía trên trang này",
     },
     {
       src: "/images/guide-mobile5.jpg",
       alt: "Hướng dẫn Mobile - Bước 5",
-      title: "Bước 5: Chọn chức năng",
+      title: "Bước 5: Chọn cây menu ở góc trên bên trái để mở menu điều hướng ở mục 'Shortcut'",
     },
     {
       src: "/images/guide-mobile6.jpg",
       alt: "Hướng dẫn Mobile - Bước 6",
-      title: "Bước 6: Xem chi tiết",
+      title: "Bước 6: Thực hiện theo hướng dẫn của trang",
     },
     {
       src: "/images/guide-mobile7.jpg",
       alt: "Hướng dẫn Mobile - Bước 7",
-      title: "Bước 7: Cập nhật thông tin",
+      title: "Bước 7: Kéo xuống phía dưới chọn 'Add to Home screen' để tạo shortcut",
     },
     {
       src: "/images/guide-mobile8.jpg",
@@ -282,7 +282,7 @@ export function GuideImageGallery({
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="font-semibold text-green-900 mb-1">📚 Hỗ trợ</p>
             <p className="text-sm text-green-800">
-              Nếu cần giúp đỡ, liên hệ với bộ phận hỗ trợ
+              Nếu cần giúp đỡ, liên hệ với bộ phận hỗ trợ: 0386190663
             </p>
           </div>
         </div>
