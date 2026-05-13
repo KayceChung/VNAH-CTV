@@ -1,10 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ToastViewport } from "@/components/Toast";
-import { AppInstallDialog } from "@/components/AppInstallDialog";
-import { AppMenu } from "@/components/AppMenu";
 import { GuideImageGallery } from "@/components/GuideImageGallery";
 
 const features = [
@@ -76,61 +72,6 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [toasts, setToasts] = useState<Array<{ id: string; message: string; tone: "success" | "error" | "info" }>>([]);
-  const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
-
-  const showToast = (message: string, tone: "success" | "error" | "info" = "info") => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, message, tone }]);
-    const duration = tone === "info" && message.includes("HUONG DAN") ? 10000 : 6000;
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, duration);
-  };
-
-  const createDesktopShortcut = async () => {
-    try {
-showToast("Đang tải file cài đặt...", "info");
-
-      const response = await fetch("/api/create-shortcut", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          appUrl: "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce?platform=desktop#appName=VNAH_QLNKT_VER30_PUBLIC-282194574&vss=H4sIAAAAAAAAA6WOMQ7CMBAE_7K1X-AWUSAEDYgGUzjxRbLi2FHsAJHlv3MJIOqI8uY0u5txt_Q4JV23kNf8u_Y0QSIrnKeeFKTCJvg0BKcgFI66e8PKad8qFJSb-MqJImRe4co_egWsIZ9sY2mYg2aNAz4Sv2eFwSKgCHRj0pWjZScLpTBrQj1GMhcesbY87vz22WtvDsFwXqNdpPICmI4eoVYBAAA=&view=blank",
-          appName: "VNAH QLNKT",
-        }),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "create-appsheet-shortcut.bat";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        showToast(
-          "File đã được tải xuống! Hãy mở file 'create-appsheet-shortcut.bat' để tạo shortcut trên Desktop.",
-          "success"
-        );
-      } else {
-        showToast(
-          "Lỗi: Không thể tải file. Hãy thử lại.",
-          "error"
-        );
-      }
-    } catch (error) {
-      showToast(
-        `Lỗi: ${error instanceof Error ? error.message : "Không biết"}`,
-        "error"
-      );
-    }
-  };
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
@@ -140,28 +81,8 @@ showToast("Đang tải file cài đặt...", "info");
     }
   }
 
-  const handleInstallConfirm = (appName: string) => {
-    showToast("App will be installed!", "success");
-    console.log("Install app:", appName);
-  };
-
   return (
     <main className="app-shell px-4 py-10 sm:px-6 lg:px-8">
-      {/* Header with Menu */}
-      <div className="mx-auto max-w-5xl flex justify-between items-start mb-8">
-        <div></div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsInstallDialogOpen(true)}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-            title="Cài đặt ứng dụng"
-          >
-            Download
-          </button>
-          <AppMenu />
-        </div>
-      </div>
-
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl flex-col justify-center gap-10">
         <div className="flex flex-col items-center gap-3 text-center page-fade">
           <div className="flex items-center gap-3">
@@ -219,17 +140,6 @@ showToast("Đang tải file cài đặt...", "info");
 
       {/* Guide Section - Auto-switches between Desktop/Mobile tabs based on screen size */}
       <GuideImageGallery deviceType="both" />
-      
-      {/* App Install Dialog */}
-      <AppInstallDialog
-        isOpen={isInstallDialogOpen}
-        onClose={() => setIsInstallDialogOpen(false)}
-        appName="VNAH_QLNKT_VER3.0_PUBLIC"
-        appUrl="www.appsheet.com"
-        onConfirm={handleInstallConfirm}
-      />
-
-      <ToastViewport toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
     </main>
   );
 }
