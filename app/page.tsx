@@ -113,7 +113,13 @@ export default function HomePage() {
             <InstallButton
               onIOSGuide={(show) => setShowIOSGuide(show)}
               onInstallSuccess={() => setInstallSuccess(true)}
-              onRedirectApp={() => router.push("/app")}
+              onRedirectApp={() => {
+                window.open(
+                  "https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce",
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
             />
             {installSuccess ? (
               <p className="rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-700">
