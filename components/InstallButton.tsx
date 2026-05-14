@@ -49,29 +49,9 @@ export function InstallButton({
     };
   }, [onInstallSuccess, onRedirectApp]);
 
-  const handleClick = async () => {
-    setStatusMessage("");
-    setIsLoading(true);
-
-    const result = await InstallManager.promptInstall();
-
-    if (result === "show-ios-guide") {
-      onIOSGuide?.(true);
-    } else if (result === "installed") {
-      onInstallSuccess?.();
-      setCanInstall(false);
-      setTimeout(() => {
-        onRedirectApp?.();
-      }, 1000);
-    } else if (result === "not-available") {
-      setStatusMessage("Trình duyệt chưa sẵn sàng cài đặt. Hãy mở bằng Chrome/Edge và thử lại sau vài giây.");
-    } else if (result === "dismissed") {
-      setStatusMessage("Bạn đã đóng hộp thoại cài đặt.");
-    } else if (result === "error") {
-      setStatusMessage("Có lỗi khi mở hộp thoại cài đặt. Vui lòng thử lại.");
-    }
-
-    setIsLoading(false);
+  const handleClick = () => {
+    window.open("https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce", "_blank");
+    if (onRedirectApp) onRedirectApp();
   };
 
   const shouldRenderButton = !alreadyInstalled && (deviceType === "ios" || canInstall || deviceType === "android" || deviceType === "desktop");
