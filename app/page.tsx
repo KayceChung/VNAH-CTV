@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GuideImageGallery } from "@/components/GuideImageGallery";
+import { InstallButton } from "@/components/InstallButton";
+import { IOSInstallGuide } from "@/components/IOSInstallGuide";
 
 const features = [
   {
@@ -72,6 +75,8 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [installSuccess, setInstallSuccess] = useState(false);
 
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
@@ -103,6 +108,19 @@ export default function HomePage() {
           <p className="max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
             Chọn chức năng bạn cần bên dưới để bắt đầu.
           </p>
+
+          <div className="mt-3 flex flex-col items-center gap-3">
+            <InstallButton
+              onIOSGuide={(show) => setShowIOSGuide(show)}
+              onInstallSuccess={() => setInstallSuccess(true)}
+              onRedirectApp={() => router.push("/app")}
+            />
+            {installSuccess ? (
+              <p className="rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-700">
+                Cài đặt thành công. Đang chuyển đến ứng dụng...
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-3 page-fade">
@@ -140,6 +158,8 @@ export default function HomePage() {
 
       {/* Guide Section - Auto-switches between Desktop/Mobile tabs based on screen size */}
       <GuideImageGallery deviceType="both" />
+
+      <IOSInstallGuide isOpen={showIOSGuide} onClose={() => setShowIOSGuide(false)} />
     </main>
   );
 }

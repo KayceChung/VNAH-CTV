@@ -7,11 +7,22 @@ export function ServiceWorkerRegistry() {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       // Small delay to ensure page is stable
       const timeout = setTimeout(() => {
-        navigator.serviceWorker
-          .register("/sw.js", {
-            scope: "/",
-            updateViaCache: "none",
-          })
+        const registerServiceWorker = async () => {
+          try {
+            return await navigator.serviceWorker.register("/service-worker.js", {
+              scope: "/",
+              updateViaCache: "none",
+            });
+          } catch {
+            // Backward-compatible fallback for existing deployments.
+            return navigator.serviceWorker.register("/sw.js", {
+              scope: "/",
+              updateViaCache: "none",
+            });
+          }
+        };
+
+        registerServiceWorker()
           .then((registration) => {
             console.log("✓ Service Worker registered successfully:", registration);
 
@@ -33,3 +44,5 @@ export function ServiceWorkerRegistry() {
 
   return null;
 }
+
+export default ServiceWorkerRegistry;

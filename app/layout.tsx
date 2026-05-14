@@ -1,7 +1,7 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { ServiceWorkerRegistry } from "@/components/ServiceWorkerRegistry";
+import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry";
 
 export const metadata: Metadata = {
   title: "VNAH QLDL CTV",
@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#00a3ff",
 };
 
