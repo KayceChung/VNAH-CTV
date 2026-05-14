@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 
 interface SignatureAndDocumentsProps {
   onSignatureCaptured: (base64Data: string) => void;
@@ -24,8 +24,10 @@ export default function SignatureAndDocuments({
 }: SignatureAndDocumentsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isSignatureSaved, setIsSignatureSaved] = useState(false);
   const [cccdPreview, setCCCDPreview] = useState<string | null>(null);
   const [cccdFileName, setCCCDFileName] = useState<string>('');
+  const [isCCCDSaved, setIsCCCDSaved] = useState(false);
 
   // Initialize canvas
   useEffect(() => {
@@ -138,6 +140,7 @@ export default function SignatureAndDocuments({
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setIsSignatureSaved(false);
   };
 
   // Capture signature
@@ -150,6 +153,7 @@ export default function SignatureAndDocuments({
     console.log("Base64 length:", base64Data.length);
     console.log("First 100 chars:", base64Data.substring(0, 100));
     onSignatureCaptured(base64Data);
+    setIsSignatureSaved(true);
   };
 
   // Handle CCCD image upload
@@ -164,6 +168,7 @@ export default function SignatureAndDocuments({
       const base64Data = event.target?.result as string;
       setCCCDPreview(base64Data);
       onCCCDImageCaptured(base64Data);
+      setIsCCCDSaved(true);
     };
     reader.readAsDataURL(file);
   };
@@ -173,13 +178,22 @@ export default function SignatureAndDocuments({
     setCCCDPreview(null);
     setCCCDFileName('');
     onCCCDImageCaptured('');
+    setIsCCCDSaved(false);
   };
 
   return (
     <div className="space-y-6">
       {/* Signature Section */}
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h3 className="text-lg font-semibold mb-1 text-gray-900">🖊️ Chữ ký nhân viên</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-lg font-semibold text-gray-900">🖊️ Chữ ký nhân viên</h3>
+          {isSignatureSaved && (
+            <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+              <Check size={14} />
+              Đã lưu
+            </div>
+          )}
+        </div>
         <p className="text-xs text-blue-600 mb-3 font-medium">
           💾 Lưu vào: Google Drive / VNAH_Signatures
         </p>
@@ -203,9 +217,13 @@ export default function SignatureAndDocuments({
           <button
             type="button"
             onClick={captureSignature}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+            className={`px-4 py-2 rounded text-sm font-medium transition ${
+              isSignatureSaved
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
           >
-            Lưu chữ ký
+            {isSignatureSaved ? '✓ Đã lưu' : 'Lưu chữ ký'}
           </button>
           <button
             type="button"
@@ -223,7 +241,15 @@ export default function SignatureAndDocuments({
 
       {/* CCCD Image Section */}
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h3 className="text-lg font-semibold mb-1 text-gray-900">📷 Ảnh chân dung (CCCD/CMND)</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-lg font-semibold text-gray-900">📷 Ảnh chân dung (CCCD/CMND)</h3>
+          {isCCCDSaved && (
+            <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+              <Check size={14} />
+              Đã lưu
+            </div>
+          )}
+        </div>
         <p className="text-xs text-blue-600 mb-3 font-medium">
           💾 Lưu vào: Google Drive / VNAH_Avatars
         </p>
@@ -270,9 +296,17 @@ export default function SignatureAndDocuments({
             >
               <X size={16} />
             </button>
-            <p className="text-xs text-gray-600 mt-2">
-              📄 {cccdFileName}
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-600">
+                📄 {cccdFileName}
+              </p>
+              {isCCCDSaved && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">
+                  <Check size={12} />
+                  Đã lưu
+                </div>
+              )}
+            </div>
           </div>
         )}
 
