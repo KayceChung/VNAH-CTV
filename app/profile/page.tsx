@@ -6,6 +6,49 @@ import { StepIndicator } from "@/components/StepIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { callGAS } from "@/lib/api";
 
+// Title mapping (Code -> Name)
+const TITLE_MAP: Record<number, string> = {
+  7: "Nhân viên",
+  13: "Điều dưỡng",
+  14: "KTV",
+  10: "Bác sĩ",
+  11: "CTV",
+  12: "Y sĩ",
+  15: "Khác",
+};
+
+// Department mapping (Code -> Name)
+const DEPARTMENT_MAP: Record<number, string> = {
+  1: "Phòng Điều hành",
+  2: "Phòng Tài chính",
+  3: "Phòng Nhân sự",
+  4: "Phòng IT",
+  5: "Phòng Kỹ thuật",
+};
+
+// Format date to dd/mm/yyyy, removing time
+function formatDate(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
+  } catch {
+    return dateStr;
+  }
+}
+
+// Decode Title ID to name
+function getTitleName(titleId: string | number): string {
+  const id = typeof titleId === "string" ? parseInt(titleId, 10) : titleId;
+  return TITLE_MAP[id] || String(titleId);
+}
+
+// Decode Department ID to name
+function getDepartmentName(deptId: string | number): string {
+  const id = typeof deptId === "string" ? parseInt(deptId, 10) : deptId;
+  return DEPARTMENT_MAP[id] || String(deptId);
+}
+
 type UpdateEmployeeResponse = {
   success: boolean;
   message?: string;
@@ -44,7 +87,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!session) {
-      pushToast("Phien xac thuc khong ton tai. Vui long dang nhap lai.", "error");
+      pushToast("Phiên xác thực không tồn tại. Vui lòng đăng nhập lại.", "error");
       router.replace("/");
     }
   }, [pushToast, router, session]);
@@ -64,10 +107,10 @@ export default function ProfilePage() {
           <section className="glass-card rounded-[28px] p-6 page-fade">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Ho so nhan su</p>
-                <h2 className="text-xl font-bold text-slate-950">{employee.Name || "Thong tin nhan vien"}</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Hồ sơ nhân sự</p>
+                <h2 className="text-xl font-bold text-slate-950">{employee.Name || "Thông tin nhân viên"}</h2>
               </div>
-              <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-[#1E40AF]">Co the chinh sua</div>
+              <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-[#1E40AF]">Có thể chỉnh sửa</div>
             </div>
 
             <form
@@ -76,12 +119,12 @@ export default function ProfilePage() {
                 event.preventDefault();
 
                 if (!form.name.trim() || !form.username.trim()) {
-                  pushToast("Ho ten va ten dang nhap khong duoc de trong.", "error");
+                  pushToast("Họ tên và tên đăng nhập không được để trống.", "error");
                   return;
                 }
 
                 if (form.password && form.password.length < 8) {
-                  pushToast("Mat khau can toi thieu 8 ky tu.", "error");
+                  pushToast("Mật khẩu cần tối thiểu 8 ký tự.", "error");
                   return;
                 }
 
@@ -103,7 +146,7 @@ export default function ProfilePage() {
                   });
 
                   if (!result.success || !result.employee) {
-                    pushToast(result.message || "Khong the cap nhat thong tin.", "error");
+                    pushToast(result.message || "Không thể cập nhật thông tin.", "error");
                     return;
                   }
 
@@ -115,22 +158,22 @@ export default function ProfilePage() {
                     employee: result.employee,
                   });
 
-                  pushToast("Da luu thay doi vao Google Sheets.", "success");
+                  pushToast("Đã lưu thay đổi vào Google Sheets.", "success");
                   router.push("/change-password");
                 } catch (error) {
-                  pushToast(error instanceof Error ? error.message : "Khong the cap nhat thong tin.", "error");
+                  pushToast(error instanceof Error ? error.message : "Không thể cập nhật thông tin.", "error");
                 } finally {
                   setSaving(false);
                 }
               }}
             >
               {[
-                { key: "name", label: "Ho va ten", value: form.name },
-                { key: "username", label: "Ten dang nhap", value: form.username },
-                { key: "password", label: "Mat khau", value: form.password, type: "password" },
+                { key: "name", label: "Họ và tên", value: form.name },
+                { key: "username", label: "Tên đăng nhập", value: form.username },
+                { key: "password", label: "Mật khẩu", value: form.password, type: "password" },
                 { key: "email", label: "Email", value: form.email, type: "email" },
                 { key: "zalo", label: "Zalo", value: form.zalo },
-                { key: "address", label: "Dia chi", value: form.address },
+                { key: "address", label: "Địa chỉ", value: form.address },
               ].map((field) => (
                 <label key={field.key} className={`block ${field.key === "address" ? "sm:col-span-2" : ""}`}>
                   <span className="mb-2 block text-sm font-semibold text-slate-800">{field.label}</span>
@@ -150,18 +193,18 @@ export default function ProfilePage() {
 
               <div className="sm:col-span-2 grid gap-4 rounded-2xl border border-slate-200 bg-white/70 p-4 sm:grid-cols-2">
                 {[
-                  { label: "So dien thoai doi chieu", value: employee.Phone },
-                  { label: "Ngay sinh", value: employee.DoB },
-                  { label: "Gioi tinh", value: employee.Sex },
-                  { label: "Chi nhanh", value: employee.Branch },
-                  { label: "Phong ban", value: employee.Department },
-                  { label: "Chuc danh", value: employee.Title },
-                  { label: "Noi lam viec", value: employee.Working_at },
-                  { label: "Trang thai", value: employee.Status },
+                  { label: "Số điện thoại đối chiếu", value: employee.Phone },
+                  { label: "Ngày sinh", value: formatDate(employee.DoB) },
+                  { label: "Giới tính", value: employee.Sex },
+                  { label: "Chi nhánh", value: employee.Branch },
+                  { label: "Phòng ban", value: getDepartmentName(employee.Department) },
+                  { label: "Chức danh", value: getTitleName(employee.Title) },
+                  { label: "Nơi làm việc", value: employee.Working_at },
+                  { label: "Trạng thái", value: employee.Status },
                 ].map((item) => (
                   <div key={item.label}>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{item.label}</p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">{item.value || "Chua cap nhat"}</p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">{item.value || "Chưa cập nhật"}</p>
                   </div>
                 ))}
               </div>
@@ -171,22 +214,22 @@ export default function ProfilePage() {
                 disabled={saving}
                 className="sm:col-span-2 mt-2 flex w-full items-center justify-center rounded-2xl bg-[#1E40AF] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {saving ? "Dang luu thay doi..." : "Luu thong tin va tiep tuc"}
+                {saving ? "Đang lưu thay đổi..." : "Lưu thông tin và tiếp tục"}
               </button>
             </form>
           </section>
 
           <section className="glass-card rounded-[28px] p-6 page-fade">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Tiep theo</p>
-            <h2 className="mt-2 text-2xl font-bold text-slate-950">Dang sua truc tiep tren Google Sheets</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Tiếp theo</p>
+            <h2 className="mt-2 text-2xl font-bold text-slate-950">Đang sửa trực tiếp trên Google Sheets</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Sau khi doi chieu ho ten va so dien thoai thanh cong, ban co the cap nhat ten dang nhap, mat khau va mot so thong tin lien he. Nut luu se ghi truc tiep ve Google Sheets thong qua Apps Script.
+              Sau khi đối chiếu họ tên và số điện thoại thành công, bạn có thể cập nhật tên đăng nhập, mật khẩu và một số thông tin liên hệ. Nút lưu sẽ ghi trực tiếp vào Google Sheets thông qua Apps Script.
             </p>
 
             <div className="mt-6 rounded-3xl border border-blue-200 bg-blue-50/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#1E40AF]">Danh tinh da xac thuc</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#1E40AF]">Danh tính đã xác thực</p>
               <p className="mt-2 text-lg font-bold text-slate-950">{session.identity.name}</p>
-              <p className="mt-1 text-sm text-slate-600">So dien thoai doi chieu: {session.identity.phone}</p>
+              <p className="mt-1 text-sm text-slate-600">Số điện thoại đối chiếu: {session.identity.phone}</p>
             </div>
 
             <button
@@ -194,7 +237,7 @@ export default function ProfilePage() {
               onClick={() => router.push("/change-password")}
               className="mt-6 flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
-              Den buoc hoan tat
+              Đến bước hoàn tất
             </button>
           </section>
         </div>
