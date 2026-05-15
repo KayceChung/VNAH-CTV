@@ -68,6 +68,26 @@ const features = [
       "bg-green-600 text-white hover:bg-green-700",
     action: "register",
   },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+        <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2z" />
+        <path d="M8 8h8" />
+        <path d="M8 11h8" />
+      </svg>
+    ),
+    accentColor: "text-amber-700",
+    accentBg: "bg-amber-100",
+    borderHover: "hover:border-amber-300",
+    badgeColor: "bg-amber-50 text-amber-700",
+    badge: "Hướng dẫn",
+    title: "Hướng dẫn cài đặt và sử dụng",
+    description: "Xem tài liệu hướng dẫn chi tiết ngay trên hệ thống",
+    btnLabel: "Mở hướng dẫn",
+    btnClass:
+      "bg-amber-600 text-white hover:bg-amber-700",
+    action: "guide",
+  },
 ];
 
 export default function HomePage() {
@@ -76,6 +96,7 @@ export default function HomePage() {
   function handleAction(action: string) {
     if (action === "verify") router.push("/verify");
     else if (action === "register") router.push("/register");
+    else if (action === "guide") router.push("/huong-dan-su-dung");
     else if (action === "appsheet") {
       window.open("https://www.appsheet.com/start/44edd09d-1417-4503-a9aa-26111dd58fce", "_blank");
     }
@@ -105,7 +126,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-3 page-fade">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 page-fade">
           {features.map((feat) => (
             <div
               key={feat.action}
