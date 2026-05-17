@@ -1,7 +1,5 @@
-
 import Link from "next/link";
-import dynamic from "next/dynamic";
-const PermissionDiagram = dynamic(() => import("../../components/PermissionDiagram"), { ssr: false });
+import PermissionDiagram from "../../components/PermissionDiagram";
 
 export default function UsageGuidePage() {
   return (
