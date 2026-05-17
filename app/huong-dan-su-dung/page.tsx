@@ -1,4 +1,7 @@
+
 import Link from "next/link";
+import dynamic from "next/dynamic";
+const PermissionDiagram = dynamic(() => import("@/components/PermissionDiagram"), { ssr: false });
 
 export default function UsageGuidePage() {
   return (
@@ -67,6 +70,11 @@ export default function UsageGuidePage() {
             HƯỚNG DẪN CÀI ĐẶT VÀ SỬ DỤNG ỨNG DỤNG QLNKT - 1
           </a>
           <span className="ml-1 text-sm text-slate-600">của Hien Khang Chung</span>
+        </section>
+
+        {/* Sơ đồ phân quyền theo cấp độ */}
+        <section className="page-fade rounded-3xl border border-slate-200/80 bg-white/80 p-3 shadow-sm backdrop-blur sm:p-4 mt-6">
+          <PermissionDiagram />
         </section>
       </div>
     </main>
